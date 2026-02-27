@@ -9,6 +9,7 @@ import streamlit as st
 import requests
 import json
 import time
+import os
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
@@ -16,7 +17,7 @@ from styles import inject_css
 
 # ─── Page Config ─────────────────────────────────────────
 st.set_page_config(
-    page_title="ResumeGuard — AI Fraud Detection",
+    page_title="Resume — Sentinel",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -25,7 +26,7 @@ st.set_page_config(
 inject_css()
 
 # ─── Config ──────────────────────────────────────────────
-API_URL = "http://localhost:8000"
+API_URL = os.environ.get("API_URL", "http://localhost:8000").rstrip("/")
 
 
 # ─── Utility Functions ───────────────────────────────────
@@ -193,7 +194,7 @@ with st.sidebar:
         <p style="font-size: 3rem; margin: 0;">🛡️</p>
         <h2 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-                    font-weight: 800; margin: 0;">ResumeGuard</h2>
+                    font-weight: 800; margin: 0;">ResumeSentinel</h2>
         <p style="color: #9e9e9e; font-size: 0.85rem;">AI-Powered Fraud Detection</p>
     </div>
     """, unsafe_allow_html=True)
@@ -220,7 +221,7 @@ with st.sidebar:
         st.caption("Start the backend: `python main.py`")
 
     st.divider()
-    st.caption("Built for HackWith AI 2025")
+    st.caption("Built for HackWith AI 2026")
     st.caption("Hybrid Architecture: Python + Spring Boot")
 
 

@@ -16,7 +16,11 @@ from typing import Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 import uvicorn
+from dotenv import load_dotenv
+
+load_dotenv(override=True)
 
 # ─── Setup Logging ──────────────────────────────────────
 logging.basicConfig(
@@ -318,7 +322,7 @@ async def validate_resume(file: UploadFile = File(...)):
 
     # Run analysis
     try:
-        analysis = run_analysis(text, file.filename)
+        analysis = await run_in_threadpool(run_analysis, text, file.filename)
         return JSONResponse(content=analysis)
     except Exception as e:
         logger.error(f"Analysis failed: {e}", exc_info=True)
@@ -351,7 +355,7 @@ async def batch_validate(files: list[UploadFile] = File(...)):
                 errors.append({"filename": file.filename, "error": parse_result.get("error", "No text")})
                 continue
 
-            analysis = run_analysis(parse_result["text"], file.filename)
+            analysis = await run_in_threadpool(run_analysis, parse_result["text"], file.filename)
             results.append(analysis)
 
         except Exception as e:
@@ -460,10 +464,11 @@ async def reset_store():
 
 # ─── Main ────────────────────────────────────────────────
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
-        reload=True,
+        port=port,
+        reload=False,
         log_level="info"
     )

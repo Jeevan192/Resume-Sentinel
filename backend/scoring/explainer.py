@@ -1,29 +1,84 @@
 """
 AI Explainer — Generates human-readable explanations.
-Builds narrative explanations from signal results
-without requiring an external LLM API call.
+Uses Google Gemini API for intelligent explanations,
+with template-based fallback if the API is unavailable.
 """
+import json
+import os
 import logging
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
+# Load env variables explicitly so they're available during import
+# Using override=True to ensure we pick up the new key from .env instead of a cached OS variable
+load_dotenv(override=True)
 
-def generate_explanation(
-    signal_results: dict,
-    risk_score: dict,
-    entities: dict
-) -> str:
-    """
-    Generate a comprehensive, human-readable explanation of the analysis.
-    
-    Args:
-        signal_results: dict of all signal outputs
-        risk_score: output from risk_engine.calculate_risk_score()
-        entities: extracted entities from the resume
-    
-    Returns:
-        Formatted explanation string
-    """
+# ─── Gemini Configuration ───────────────────────────────
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+SYSTEM_PROMPT = (
+    "You are a recruitment fraud analyst for ResumeSentinel, an AI-based resume fraud detection engine. "
+    "Given structured fraud signal data from our 6-signal detection pipeline, write a clear, "
+    "professional recruiter alert (4-6 sentences). Be factual, specific, and reference the actual "
+    "signal names and scores. Do not assign blame or say the person is definitely fraudulent. "
+    "Mention the composite risk score, which signals fired, and give a concrete recommendation. "
+    "Use the signal data provided."
+)
+
+gemini_model = None
+if GEMINI_API_KEY:
+    try:
+        import google.generativeai as genai
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            generation_config={"temperature": 0.2},
+            system_instruction=SYSTEM_PROMPT,
+        )
+        logger.info("Gemini AI successfully configured for explanations.")
+    except ImportError:
+        logger.warning("google-generativeai not installed. AI Explanations disabled.")
+    except Exception as e:
+        logger.error(f"Failed to configure Gemini AI: {e}")
+
+
+def _generate_gemini_explanation(signal_results: dict, risk_score: dict, entities: dict) -> str:
+    """Try to generate explanation using Gemini API."""
+    if not gemini_model:
+        return None
+
+    payload = {
+        "candidate_name": entities.get("name", "Unknown"),
+        "composite_score": risk_score.get("composite_score", 0),
+        "risk_level": risk_score.get("risk_level", "UNKNOWN"),
+        "active_signals": risk_score.get("active_signals", 0),
+        "total_signals": risk_score.get("total_signals", 6),
+        "most_critical_signal": risk_score.get("most_critical_signal", "None"),
+        "signals": {},
+    }
+
+    for signal_name, result in signal_results.items():
+        payload["signals"][signal_name] = {
+            "score": result.get("score", 0),
+            "severity": result.get("severity", "NONE"),
+            "explanation": result.get("explanation", ""),
+        }
+
+    try:
+        response = gemini_model.generate_content(json.dumps(payload))
+        content = response.text if response else None
+        if content:
+            logger.info("Gemini explanation generated successfully.")
+            return content.strip()
+        return None
+    except Exception as e:
+        logger.error(f"Gemini API call failed during generation: {str(e)}", exc_info=True)
+        return None
+
+
+def _generate_template_explanation(signal_results: dict, risk_score: dict, entities: dict) -> str:
+    """Fallback: Generate explanation using templates (no API needed)."""
     parts = []
     name = entities.get("name", "The candidate")
     score = risk_score.get("composite_score", 0)
@@ -61,7 +116,6 @@ def generate_explanation(
     # Signal-specific explanations
     signal_explanations = []
 
-    # Timeline
     timeline = signal_results.get("timeline_overlap", {})
     if timeline.get("score", 0) > 0:
         overlaps = timeline.get("overlap_count", 0)
@@ -72,7 +126,6 @@ def generate_explanation(
             + (timeline.get("explanation", ""))
         )
 
-    # Email
     email = signal_results.get("email_validation", {})
     if email.get("score", 0) > 0:
         flags = email.get("flags", [])
@@ -81,14 +134,12 @@ def generate_explanation(
             + email.get("explanation", "Issues found with email address.")
         )
 
-    # Phone
     phone = signal_results.get("phone_validation", {})
     if phone.get("score", 0) > 0:
         signal_explanations.append(
             f"📱 **Phone Analysis**: " + phone.get("explanation", "Concerns with phone number.")
         )
 
-    # JD Plagiarism
     jd = signal_results.get("jd_plagiarism", {})
     if jd.get("score", 0) > 0:
         exact = jd.get("exact_matches", 0)
@@ -98,7 +149,6 @@ def generate_explanation(
             + jd.get("explanation", "")
         )
 
-    # Semantic similarity
     semantic = signal_results.get("semantic_similarity", {})
     if semantic.get("score", 0) > 0:
         max_sim = semantic.get("max_similarity", 0)
@@ -107,7 +157,6 @@ def generate_explanation(
             + semantic.get("explanation", "")
         )
 
-    # Skills mismatch
     skills = signal_results.get("skills_mismatch", {})
     if skills.get("score", 0) > 0:
         signal_explanations.append(
@@ -139,6 +188,35 @@ def generate_explanation(
         )
 
     return "\n".join(parts)
+
+
+def generate_explanation(
+    signal_results: dict,
+    risk_score: dict,
+    entities: dict
+) -> str:
+    """
+    Generate a comprehensive, human-readable explanation of the analysis.
+
+    Tries Gemini API first for intelligent AI-powered explanations.
+    Falls back to template-based generation if the API is unavailable.
+
+    Args:
+        signal_results: dict of all signal outputs
+        risk_score: output from risk_engine.calculate_risk_score()
+        entities: extracted entities from the resume
+
+    Returns:
+        Formatted explanation string
+    """
+    # Try Gemini first
+    gemini_result = _generate_gemini_explanation(signal_results, risk_score, entities)
+    if gemini_result:
+        return gemini_result
+
+    # Fallback to template-based
+    logger.info("Using template-based explanation (Gemini unavailable).")
+    return _generate_template_explanation(signal_results, risk_score, entities)
 
 
 def generate_signal_summary(signal_results: dict) -> dict:

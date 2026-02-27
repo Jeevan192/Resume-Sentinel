@@ -1,0 +1,42 @@
+Ananya Desai
+Email: ananya.desai@yahoo.com
+Phone: +91-9988776655
+
+Summary:
+Fresher with strong academic background seeking entry-level software engineering role. Quick learner with passion for technology and problem-solving.
+
+Education:
+B.Tech in Computer Science — IIIT Hyderabad (2020 – 2024)
+CGPA: 9.1/10
+
+M.Tech in AI & ML — IIIT Hyderabad (2024 – Present)
+
+Projects:
+
+E-Commerce Platform | Academic Project
+January 2024 – April 2024
+- Built a full-stack e-commerce platform using React and Django
+- Implemented payment gateway integration with Razorpay
+- Deployed on AWS EC2 with Docker containerization
+- Achieved 95% test coverage with Jest and Pytest
+
+Sentiment Analysis Tool | Research Project
+August 2023 – December 2023
+- Developed NLP pipeline for Twitter sentiment analysis
+- Fine-tuned BERT model achieving 91% accuracy
+- Created REST API using FastAPI for real-time predictions
+- Published results at college symposium
+
+Internship:
+
+Software Engineering Intern | Google Summer of Code
+May 2023 – August 2023
+- Contributed to open-source project under Apache Foundation
+- Fixed 15 bugs and implemented 3 new features
+- Participated in weekly code reviews with mentor
+
+Skills:
+Python, Java, JavaScript, React, Django, FastAPI, Docker, AWS, Git,
+Machine Learning, NLP, TensorFlow, PyTorch, SQL, MongoDB
+
+Languages: English, Hindi, Kannada

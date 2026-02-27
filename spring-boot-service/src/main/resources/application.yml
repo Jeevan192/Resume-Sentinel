@@ -1,0 +1,58 @@
+# ─── ResumeGuard Spring Boot Service ────────────────
+server:
+  port: 8080
+
+spring:
+  application:
+    name: resumeguard-service
+
+  # H2 Database
+  datasource:
+    url: jdbc:h2:file:./data/resumeguard_db
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    properties:
+      hibernate:
+        format_sql: true
+
+# ─── CORS Config ────────────────────────────────────
+cors:
+  allowed-origins: "*"
+
+# ─── Python Service Integration ─────────────────────
+python:
+  service:
+    url: http://localhost:8000
+
+# ─── Rule Engine Thresholds ─────────────────────────
+rules:
+  thresholds:
+    critical: 85
+    high: 65
+    medium: 40
+    low: 20
+  weights:
+    timeline: 0.25
+    email: 0.15
+    phone: 0.10
+    plagiarism: 0.20
+    similarity: 0.20
+    mismatch: 0.10
+
+# ─── Logging ────────────────────────────────────────
+logging:
+  level:
+    com.resumeguard: INFO
+    org.springframework: WARN

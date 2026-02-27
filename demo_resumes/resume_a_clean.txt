@@ -1,0 +1,34 @@
+Rahul Sharma
+Email: rahul.sharma92@gmail.com
+Phone: +91-9876543210
+
+Summary:
+Enthusiastic software developer with 2 years of experience in web development. Strong foundation in Java and Python programming. Passionate about building scalable applications.
+
+Education:
+B.Tech in Computer Science — KL University, Hyderabad (2018 – 2022)
+CGPA: 8.5/10
+
+Work Experience:
+
+Software Developer | Infosys, Hyderabad
+June 2022 – Present
+- Developed RESTful APIs using Spring Boot for internal tools, serving 500+ users
+- Collaborated with a team of 8 engineers on microservices architecture migration
+- Wrote unit tests achieving 85% code coverage using JUnit and Mockito
+- Participated in code reviews and contributed to technical documentation
+
+Intern | Wipro, Bangalore
+January 2022 – May 2022
+- Built a dashboard for monitoring system health using React and Node.js
+- Automated deployment scripts using Shell and Python
+- Reduced manual deployment time by 60%
+
+Skills:
+Java, Python, Spring Boot, React, JavaScript, SQL, Git, Docker, REST API, Agile
+
+Certifications:
+- AWS Cloud Practitioner (2023)
+- Oracle Java SE 11 Developer (2022)
+
+Languages: English, Hindi, Telugu

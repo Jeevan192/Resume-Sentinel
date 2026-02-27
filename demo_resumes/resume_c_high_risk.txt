@@ -1,0 +1,41 @@
+Vikram Patel
+Email: priya.temp2024@mailinator.com
+Phone: +91-8765432109
+
+Summary:
+Dynamic full-stack developer with 3+ years of experience building enterprise applications. Expertise in cloud-native development and DevOps practices.
+
+Education:
+B.Tech in Computer Science — VIT University (2017 – 2021)
+CGPA: 8.2/10
+
+Work Experience:
+
+Senior Software Engineer | TCS, Hyderabad
+January 2022 – December 2023
+- Led a team of 5 developers in building a cloud-native CRM platform
+- Designed microservices architecture using Spring Boot and Kubernetes
+- Implemented CI/CD pipelines using Jenkins and Docker
+- Managed AWS infrastructure including EC2, S3, RDS, and Lambda
+
+Full Stack Developer | Tech Mahindra, Pune
+March 2022 – Present
+- Building real-time analytics dashboard using React, Node.js, and PostgreSQL
+- Developing REST APIs for mobile application backend
+- Optimizing database queries resulting in 40% performance improvement
+- Collaborating with cross-functional teams in Agile sprints
+
+Intern | TCS, Hyderabad
+June 2021 – December 2021
+- Developed automation testing framework using Selenium and Java
+- Created technical documentation and user manuals
+- Participated in client demos and requirement gathering sessions
+
+Skills:
+Java, Spring Boot, React, Node.js, Python, Kubernetes, Docker, AWS, PostgreSQL,
+MongoDB, Jenkins, CI/CD, Microservices, Agile, Machine Learning, Deep Learning,
+System Design, Technical Leadership, DevOps, Terraform, Ansible
+
+Certifications:
+- AWS Solutions Architect Associate (2023)
+- Kubernetes Administrator (CKA) (2023)

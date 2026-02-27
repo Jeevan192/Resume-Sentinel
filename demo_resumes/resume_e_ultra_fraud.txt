@@ -1,0 +1,53 @@
+Kiran Kumar
+Email: kiran.testing123@yopmail.com
+Phone: 1234567890
+
+FRESHER | SENIOR ARCHITECT | TECHNICAL LEAD
+
+Summary:
+Experienced senior architect and technical lead with extensive expertise in enterprise systems, distributed computing, blockchain, and AI/ML. 10+ years of experience in building mission-critical systems.
+
+Education:
+B.Tech in Computer Science — Random University (2021 – 2025)
+
+Work Experience:
+
+Chief Technology Officer | Microsoft
+January 2024 – Present
+- Leading a team of 200 engineers across 5 global offices
+- Architecting next-generation cloud infrastructure
+- Driving AI integration across all product lines
+- Managing $50M annual technology budget
+
+Principal Architect | Amazon Web Services
+June 2023 – December 2023
+- Designed distributed systems handling 10M requests/second
+- Led migration of monolithic systems to microservices
+- Implemented zero-downtime deployment strategies
+
+Senior Staff Engineer | Google
+January 2023 – May 2023
+- Built machine learning pipelines processing petabytes of data
+- Optimized search algorithms improving relevance by 30%
+- Mentored 50+ junior engineers
+
+Lead Developer | Meta
+March 2022 – December 2022
+- Developed real-time messaging infrastructure
+- Scaled systems to handle 2 billion daily active users
+- Implemented end-to-end encryption protocols
+
+Skills:
+Java, Python, C++, Go, Rust, Scala, Kotlin, JavaScript, TypeScript, Ruby, R,
+Spring Boot, React, Angular, Vue, Node.js, Django, Flask, FastAPI,
+Docker, Kubernetes, AWS, Azure, GCP, Terraform, Ansible,
+Machine Learning, Deep Learning, NLP, Computer Vision, Blockchain, Solidity, Web3,
+System Design, Architecture, Distributed Systems, Microservices,
+Technical Leadership, Team Lead, DevOps, MLOps, Data Engineering,
+TensorFlow, PyTorch, Spark, Hadoop, Kafka, Redis, Elasticsearch,
+GraphQL, MongoDB, PostgreSQL, MySQL, Oracle, Cassandra
+
+Certifications:
+- Every AWS certification (2024)
+- Every Google Cloud certification (2024)
+- Every Azure certification (2024)

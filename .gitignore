@@ -1,0 +1,49 @@
+# ─── Python ───────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# ─── Java / Spring Boot ──────────────────────
+target/
+*.class
+*.jar
+*.war
+*.log
+.mvn/
+spring-boot-service/data/
+
+# ─── IDE ──────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.project
+.classpath
+.settings/
+
+# ─── OS ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── ML Models (downloaded at runtime) ───────
+*.bin
+*.pt
+*.onnx
+sentence-transformers/
+
+# ─── Misc ─────────────────────────────────────
+*.sqlite
+*.db
+.env
+node_modules/

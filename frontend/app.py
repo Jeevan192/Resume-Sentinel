@@ -149,8 +149,8 @@ def create_signal_radar(signals):
 
 def create_signal_bar(signals):
     """Create horizontal bar chart of signal scores."""
-    names = ["Timeline", "Email", "Phone", "Plagiarism", "Similarity", "Mismatch"]
-    max_vals = [40, 20, 15, 30, 35, 20]
+    names = ["Timeline", "Email", "Phone", "Plagiarism", "Similarity", "Mismatch", "Profile"]
+    max_vals = [40, 20, 15, 30, 35, 20, 30]
     values = [
         signals.get("timeline_score", 0),
         signals.get("email_score", 0),
@@ -158,6 +158,7 @@ def create_signal_bar(signals):
         signals.get("plagiarism_score", 0),
         signals.get("similarity_score", 0),
         signals.get("mismatch_score", 0),
+        signals.get("profile_score", 0),
     ]
     colors = [get_risk_color((v / m) * 100) if m > 0 else "#4fc3f7" for v, m in zip(values, max_vals)]
 
@@ -257,6 +258,7 @@ if page == "🔍 Analyze Resume":
                 res = requests.post(
                     f"{API_URL}/validate_resume",
                     files={"file": (uploaded.name, uploaded.getvalue(), "application/octet-stream")},
+                    headers={"X-API-Key": "deet-telangana-hackathon-2026"},
                     timeout=120,
                 )
                 
@@ -280,6 +282,12 @@ if page == "🔍 Analyze Resume":
             except Exception as e:
                 st.error(f"Error: {e}")
                 st.stop()
+
+        # Scroll to top after analysis completes
+        st.components.v1.html(
+            '<script>parent.window.scrollTo({top: 0, behavior: "smooth"});</script>',
+            height=0
+        )
 
         score = data.get("risk_score", 0)
         risk_level = data.get("risk_level", "UNKNOWN")
@@ -422,7 +430,7 @@ if page == "🔍 Analyze Resume":
         st.markdown("---")
         st.subheader("✅ Contact Verification Results")
 
-        ev_col, pv_col = st.columns(2)
+        ev_col, pv_col, prof_col = st.columns(3)
 
         with ev_col:
             st.markdown("##### ✉️ Email Verification (ZeroBounce)")
@@ -432,8 +440,14 @@ if page == "🔍 Analyze Resume":
                     status = ev.get("status", "unknown")
                     is_valid = ev.get("is_valid", False)
                     is_disp = ev.get("is_disposable", False)
-                    badge_color = "#66bb6a" if is_valid else "#ef5350"
-                    badge_text = "VALID" if is_valid else status.upper()
+                    
+                    if status == "api_error":
+                        badge_color = "#ffa726"
+                        badge_text = "API ERROR"
+                    else:
+                        badge_color = "#66bb6a" if is_valid else "#ef5350"
+                        badge_text = "VALID" if is_valid else status.upper()
+                        
                     disp_badge = ' <span style="background:#ff7043;padding:2px 8px;border-radius:8px;font-size:0.75rem;">DISPOSABLE</span>' if is_disp else ""
                     st.markdown(f"""
                     <div class="glass-card" style="padding: 0.75rem; margin-bottom: 0.5rem;">
@@ -468,6 +482,42 @@ if page == "🔍 Analyze Resume":
                     """, unsafe_allow_html=True)
             else:
                 st.info("No phone verification data available.")
+
+        with prof_col:
+            st.markdown("##### 🔗 Profile Verification (Google Search)")
+            prof_verif = data.get("profile_verification", [])
+            if prof_verif:
+                for prof in prof_verif:
+                    is_valid = prof.get("is_valid", False)
+                    status_msg = prof.get("status", "unknown")
+                    
+                    if is_valid is True:
+                        badge_color = "#66bb6a"
+                        badge_text = "INDEXED"
+                    elif is_valid is False:
+                        badge_color = "#ef5350"
+                        badge_text = "FAKE / UNINDEXED"
+                    else:
+                        badge_color = "#ffa726"
+                        badge_text = "ERROR"
+
+                    url_display = prof.get('url', 'N/A')
+                    if len(url_display) > 35:
+                        url_display = url_display[:32] + "..."
+
+                    st.markdown(f"""
+                    <div class="glass-card" style="padding: 0.75rem; margin-bottom: 0.5rem;">
+                        <span style="font-weight:600; font-size:0.85rem;" title="{prof.get('url', '')}">{url_display}</span>
+                        <div style="margin-top:4px;">
+                            <span style="background:{badge_color};color:#fff;padding:2px 10px;border-radius:8px;font-size:0.75rem;">{badge_text}</span>
+                        </div>
+                        <div style="color:#9e9e9e;font-size:0.8rem;margin-top:4px;">
+                            Status: {status_msg}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.info("No GitHub or LinkedIn links found.")
 
         # ─── Raw JSON ────────────────────────────────
         with st.expander("🔧 Raw API Response", expanded=False):

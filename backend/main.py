@@ -15,7 +15,8 @@ from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 import uvicorn
 from dotenv import load_dotenv
@@ -42,24 +43,36 @@ from signals.phone_dedup import validate_phones
 from signals.jd_plagiarism import check_jd_plagiarism
 from signals.semantic_similarity import check_semantic_similarity
 from signals.skills_mismatch import check_skills_mismatch
+from signals.link_validator import verify_profile_links
 from scoring.risk_engine import calculate_risk_score, get_risk_color, get_risk_label
 from scoring.explainer import generate_explanation, generate_signal_summary
+import redis
+
+from db import hydrate_store_from_db, save_resume_to_db, save_contacts_to_db, save_experiences_to_db
 
 # ─── In-Memory Store (for hackathon demo) ───────────────
-# In production, this would be backed by the Spring Boot service + DB
-resume_store = {
-    "resumes": [],        # List of processed resume records
-    "emails_seen": [],     # All emails across submissions
-    "phones_seen": [],     # All phones across submissions
-    "experiences_seen": [],  # All experiences for JD plagiarism
-    "embeddings": [],      # All embeddings for similarity
-}
+# Hydrate memory from PostgreSQL cluster on boot to maintain DEET data persistence
+resume_store = hydrate_store_from_db()
+
+# ─── Redis Cache Setup ──────────────────────────────────
+redis_client = None
+in_memory_cache = {}
+try:
+    redis_client = redis.Redis(host='localhost', port=6379, db=0, socket_connect_timeout=1)
+    redis_client.ping()
+    logger.info("Connected to Redis cache successfully.")
+except Exception as e:
+    logger.warning(f"Redis not available, falling back to in-memory dict cache. ({e})")
+    redis_client = None
+
+# ─── Frontend path ──────────────────────────────────────
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend")
 
 # ─── FastAPI App ─────────────────────────────────────────
 app = FastAPI(
     title="🛡️ ResumeGuard — Fraud Detection Engine",
-    description="AI-powered resume fraud detection with 6-signal analysis pipeline",
-    version="1.0.0",
+    description="AI-powered resume fraud detection with 7-signal analysis pipeline",
+    version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -71,6 +84,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve frontend at root
+@app.get("/", include_in_schema=False)
+async def serve_frontend():
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
 
 
 # ─── Helper Functions ────────────────────────────────────
@@ -165,6 +183,13 @@ def run_analysis(text: str, filename: str) -> dict:
         logger.error(f"Skills mismatch signal failed: {e}")
         signal_results["skills_mismatch"] = {"score": 0, "severity": "NONE", "explanation": f"Error: {e}"}
 
+    # Signal 7: Profile Link Verification (Serper API)
+    try:
+        signal_results["profile_validation"] = verify_profile_links(entities)
+    except Exception as e:
+        logger.error(f"Profile link validation failed: {e}")
+        signal_results["profile_validation"] = {"score": 0, "severity": "NONE", "explanation": f"Error: {e}"}
+
     # Step 3: Calculate composite risk score
     logger.info("Calculating risk score...")
     risk_score = calculate_risk_score(signal_results)
@@ -173,8 +198,8 @@ def run_analysis(text: str, filename: str) -> dict:
     explanation = generate_explanation(signal_results, risk_score, entities)
     signal_summary = generate_signal_summary(signal_results)
 
-    # Step 5: Store data for future comparisons
-    _store_resume_data(filename, entities, signal_results, text)
+    # Step 5: Store data for future comparisons and Database
+    _store_resume_data(filename, entities, signal_results, text, risk_score)
 
     # Build response
     return {
@@ -200,9 +225,11 @@ def run_analysis(text: str, filename: str) -> dict:
             "plagiarism_score": signal_results.get("jd_plagiarism", {}).get("score", 0),
             "similarity_score": signal_results.get("semantic_similarity", {}).get("score", 0),
             "mismatch_score": signal_results.get("skills_mismatch", {}).get("score", 0),
+            "profile_score": signal_results.get("profile_validation", {}).get("score", 0),
         },
         "email_verification": signal_results.get("email_validation", {}).get("verified_emails", []),
         "phone_verification": signal_results.get("phone_validation", {}).get("verified_phones", []),
+        "profile_verification": signal_results.get("profile_validation", {}).get("verified_links", []),
         "signal_details": signal_summary,
         "breakdown": risk_score["breakdown"],
         "llm_explanation": explanation,
@@ -225,21 +252,22 @@ def run_analysis(text: str, filename: str) -> dict:
     }
 
 
-def _store_resume_data(filename: str, entities: dict, signal_results: dict, text: str):
-    """Store processed resume data for cross-resume comparison."""
-    # Store emails
-    resume_store["emails_seen"].extend(entities.get("emails", []))
+def _store_resume_data(filename: str, entities: dict, signal_results: dict, text: str, risk_score: dict):
+    """Store processed resume data for cross-resume comparison and PostgreSQL DB."""
+    emails = entities.get("emails", [])
+    phones = entities.get("phones", [])
+    experiences = entities.get("experiences", [])
+    text_hash = hashlib.sha256(text.encode()).hexdigest()
 
-    # Store phones
-    resume_store["phones_seen"].extend(entities.get("phones", []))
+    # 1. Store in Runtime Memory
+    resume_store["emails_seen"].extend(emails)
+    resume_store["phones_seen"].extend(phones)
 
-    # Store experiences for JD plagiarism
-    for exp in entities.get("experiences", []):
+    for exp in experiences:
         exp_copy = dict(exp)
         exp_copy["source_resume"] = filename
         resume_store["experiences_seen"].append(exp_copy)
 
-    # Store embedding for semantic similarity
     semantic = signal_results.get("semantic_similarity", {})
     if semantic.get("embedding"):
         resume_store["embeddings"].append({
@@ -248,28 +276,45 @@ def _store_resume_data(filename: str, entities: dict, signal_results: dict, text
             "embedding": semantic["embedding"],
         })
 
-    # Store full record
     resume_store["resumes"].append({
         "filename": filename,
         "analyzed_at": datetime.now().isoformat(),
         "name": entities.get("name", "Unknown"),
-        "emails": entities.get("emails", []),
-        "phones": entities.get("phones", []),
-        "text_hash": hashlib.sha256(text.encode()).hexdigest(),
+        "emails": emails,
+        "phones": phones,
+        "text_hash": text_hash,
     })
+
+    # 2. Persist to PostgreSQL Database
+    try:
+        data_json = {"entities": entities, "signals": signal_results}
+        
+        save_resume_to_db(
+            filename=filename,
+            candidate_name=entities.get("name", "Unknown"),
+            text_hash=text_hash,
+            raw_text=text,
+            risk_score=risk_score.get("composite_score", 0),
+            risk_level=risk_score.get("risk_level", "UNKNOWN"),
+            data_json=data_json
+        )
+        save_contacts_to_db(emails, phones, filename)
+        save_experiences_to_db(experiences, filename)
+    except Exception as e:
+        logger.error(f"PostgreSQL persistence failed: {e}")
 
 
 # ─── API Endpoints ───────────────────────────────────────
 
-@app.get("/")
-async def root():
-    """Root endpoint — API info."""
+@app.get("/api-info")
+async def api_info():
+    """API info endpoint."""
     return {
         "name": "🛡️ ResumeGuard — Fraud Detection Engine",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "status": "running",
         "signals": ["timeline_overlap", "email_validation", "phone_validation",
-                     "jd_plagiarism", "semantic_similarity", "skills_mismatch"],
+                     "jd_plagiarism", "semantic_similarity", "skills_mismatch", "profile_validation"],
         "resumes_analyzed": len(resume_store["resumes"]),
     }
 
@@ -280,8 +325,24 @@ async def health():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 
+from fastapi.security import APIKeyHeader
+from fastapi import Security
+
+# ─── DEET SECURITY: API Key Authentication ───────────────
+DEET_SECRET_KEY = os.getenv("DEET_SECRET_KEY", "deet-telangana-hackathon-2026")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=True)
+
+async def verify_api_key(api_key: str = Security(api_key_header)):
+    if api_key != DEET_SECRET_KEY:
+        raise HTTPException(status_code=403, detail="DEET Security: Invalid or missing API Key")
+    return api_key
+
+
 @app.post("/validate_resume")
-async def validate_resume(file: UploadFile = File(...)):
+async def validate_resume(
+    file: UploadFile = File(...),
+    api_key: str = Security(verify_api_key)
+):
     """
     Analyze a single resume for fraud signals.
     Accepts PDF, DOCX, or TXT files.
@@ -324,7 +385,38 @@ async def validate_resume(file: UploadFile = File(...)):
 
     # Run analysis
     try:
+        # Check cache first
+        file_hash = hashlib.sha256(text.encode()).hexdigest()
+        cache_key = f"resume_analysis:{file_hash}"
+        cached_result = None
+        
+        if redis_client:
+            try:
+                cached = redis_client.get(cache_key)
+                if cached:
+                    logger.info(f"Returning cached analysis for {file.filename} from Redis.")
+                    cached_result = json.loads(cached.decode('utf-8'))
+            except Exception as e:
+                logger.warning(f"Redis get failed: {e}")
+        else:
+            if cache_key in in_memory_cache:
+                logger.info(f"Returning cached analysis for {file.filename} from Memory fallback.")
+                cached_result = in_memory_cache[cache_key]
+
+        if cached_result:
+            return JSONResponse(content=cached_result)
+
         analysis = await run_in_threadpool(run_analysis, text, file.filename)
+        
+        # Save to cache
+        if redis_client:
+            try:
+                redis_client.setex(cache_key, 3600, json.dumps(analysis))  # Cache for 1 hour
+            except Exception as e:
+                pass
+        else:
+            in_memory_cache[cache_key] = analysis
+
         return JSONResponse(content=analysis)
     except Exception as e:
         logger.error(f"Analysis failed: {e}", exc_info=True)
@@ -453,15 +545,67 @@ async def get_stats():
     })
 
 
+@app.get("/export_csv")
+async def export_csv():
+    """Export analysis history as a downloadable CSV file."""
+    import csv
+    import io
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["Candidate", "Filename", "Risk Score", "Risk Level", "Emails", "Phones", "Analyzed At"])
+    
+    for r in resume_store["resumes"]:
+        writer.writerow([
+            r.get("name", r.get("candidate_name", "")),
+            r.get("filename", ""),
+            round(r.get("risk_score", 0), 1),
+            r.get("risk_level", ""),
+            ", ".join(r.get("emails", [])),
+            ", ".join(r.get("phones", [])),
+            r.get("analyzed_at", ""),
+        ])
+    
+    from starlette.responses import StreamingResponse
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=resumeguard_report.csv"}
+    )
+
+
 @app.delete("/reset")
 async def reset_store():
-    """Reset the in-memory store (for demo purposes)."""
+    """Reset the in-memory store AND PostgreSQL database."""
+    # Clear in-memory store
     resume_store["resumes"] = []
     resume_store["emails_seen"] = []
     resume_store["phones_seen"] = []
     resume_store["experiences_seen"] = []
     resume_store["embeddings"] = []
-    return {"status": "reset", "message": "All stored data cleared"}
+    
+    # Clear PostgreSQL tables
+    try:
+        from db import _get_session, DBResume, DBContact, DBExperience
+        db = _get_session()
+        if db:
+            db.query(DBResume).delete()
+            db.query(DBContact).delete()
+            db.query(DBExperience).delete()
+            db.commit()
+            db.close()
+            logger.info("PostgreSQL tables cleared via /reset endpoint.")
+    except Exception as e:
+        logger.error(f"Failed to clear PostgreSQL tables: {e}")
+    
+    # Reload .env so any new API keys take effect immediately
+    load_dotenv(override=True)
+    
+    return {"status": "reset", "message": "All stored data and database cleared"}
+
+
+
 
 
 # ─── Main ────────────────────────────────────────────────

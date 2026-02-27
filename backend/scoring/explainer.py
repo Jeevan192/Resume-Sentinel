@@ -48,8 +48,13 @@ def _generate_gemini_explanation(signal_results: dict, risk_score: dict, entitie
     if not gemini_model:
         return None
 
+    # DEET DATA INTEGRITY: Mask PII before sending to public LLM
+    raw_name = entities.get("name", "Unknown")
+    import hashlib
+    masked_id = f"Candidate-{hashlib.md5(raw_name.encode()).hexdigest()[:6].upper()}"
+
     payload = {
-        "candidate_name": entities.get("name", "Unknown"),
+        "candidate_name": masked_id,
         "composite_score": risk_score.get("composite_score", 0),
         "risk_level": risk_score.get("risk_level", "UNKNOWN"),
         "active_signals": risk_score.get("active_signals", 0),
@@ -62,7 +67,7 @@ def _generate_gemini_explanation(signal_results: dict, risk_score: dict, entitie
         payload["signals"][signal_name] = {
             "score": result.get("score", 0),
             "severity": result.get("severity", "NONE"),
-            "explanation": result.get("explanation", ""),
+            "explanation": result.get("explanation", "").replace(raw_name, masked_id), # Mask any leaked names in text
         }
 
     try:

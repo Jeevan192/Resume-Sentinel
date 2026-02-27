@@ -64,7 +64,22 @@ def extract_text_from_pdf(file_bytes: bytes) -> dict:
                     logger.warning(f"Failed to extract page {i+1}: {e}")
                     result["pages"].append("")
 
+            # Extract hyperlink annotations from PDF (LinkedIn, GitHub URLs etc.)
+            hyperlink_urls = []
+            try:
+                for page in pdf.pages:
+                    annots = page.annots or []
+                    for annot in annots:
+                        uri = annot.get("uri", "")
+                        if uri and isinstance(uri, str) and uri.startswith("http"):
+                            hyperlink_urls.append(uri)
+            except Exception as e:
+                logger.warning(f"Could not extract hyperlinks from PDF: {e}")
+
             result["text"] = "\n\n".join(result["pages"]).strip()
+            # Append hyperlink URLs so entity extractor can find them
+            if hyperlink_urls:
+                result["text"] += "\n" + "\n".join(hyperlink_urls)
 
             # Edge case: PDF is image-only (no extractable text)
             if len(result["text"].strip()) < 20:

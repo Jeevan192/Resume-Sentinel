@@ -26,9 +26,11 @@ public class Resume {
 
     private String email;
 
+    @Convert(converter = com.resumeguard.util.AesEncryptor.class)
     private String phone;
 
     @Column(length = 5000)
+    @Convert(converter = com.resumeguard.util.AesEncryptor.class)
     private String rawText;
 
     private Double riskScore;

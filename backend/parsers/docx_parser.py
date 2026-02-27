@@ -57,8 +57,22 @@ def extract_text_from_docx(file_bytes: bytes) -> dict:
                     if para.text.strip():
                         header_texts.append(para.text.strip())
 
+        # Extract hyperlinks from document relationships (LinkedIn, GitHub URLs etc.)
+        hyperlink_urls = []
+        try:
+            for rel in doc.part.rels.values():
+                if 'hyperlink' in str(rel.reltype).lower():
+                    url = rel.target_ref
+                    if url and isinstance(url, str) and url.startswith('http'):
+                        hyperlink_urls.append(url)
+        except Exception as e:
+            logger.warning(f"Could not extract hyperlinks from DOCX: {e}")
+
         # Combine all text sources
         all_text_parts = header_texts + paragraphs_text + table_texts
+        # Append hyperlinks so the entity extractor can find them
+        if hyperlink_urls:
+            all_text_parts.append("\n".join(hyperlink_urls))
         result["text"] = "\n".join(all_text_parts).strip()
         result["sections"] = paragraphs_text
 

@@ -11,7 +11,6 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-ZEROBOUNCE_API_KEY = os.environ.get("ZEROBOUNCE_API_KEY", "")
 ZEROBOUNCE_VALIDATE_URL = "https://api.zerobounce.net/v2/validate"
 
 # Comprehensive list of 100+ known disposable email domains
@@ -68,6 +67,9 @@ PROFESSIONAL_DOMAINS = {
 
 def _verify_email_zerobounce(email: str) -> dict:
     """Call ZeroBounce API to verify a single email. Returns raw result dict or None on failure."""
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+    ZEROBOUNCE_API_KEY = os.environ.get("ZEROBOUNCE_API_KEY", "")
     if not ZEROBOUNCE_API_KEY:
         return None
     try:
@@ -78,12 +80,19 @@ def _verify_email_zerobounce(email: str) -> dict:
         )
         response.raise_for_status()
         data = response.json()
+        
+        # Handle "error" explicitly (e.g. out of credits or invalid key)
+        if "error" in data:
+            logger.warning(f"ZeroBounce API Error: {data['error']}")
+            # Return None so the caller falls back to heuristic-only mode
+            return None
+
         status = data.get("status", "unknown").lower()
         sub_status = data.get("sub_status", "").lower()
         return {
             "email": email,
             "status": status,
-            "sub_status": data.get("sub_status", ""),
+            "sub_status": sub_status,
             "is_valid": status == "valid",
             "is_disposable": sub_status in ("disposable", "toxic"),
             "is_free": data.get("free_email", False),

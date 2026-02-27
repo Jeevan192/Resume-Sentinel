@@ -74,10 +74,31 @@ def extract_entities(text: str) -> dict:
         "skills": extract_skills(text),
         "experiences": extract_experiences(text),
         "education": extract_education(text),
+        "links": extract_links(text),
         "raw_text": text,
         "word_count": len(text.split()),
         "line_count": len(text.strip().split("\n")),
     }
+
+
+def extract_links(text: str) -> list:
+    """Extract LinkedIn and GitHub profile links."""
+    # Match full URLs with http/https — allow dots, slashes, percent-encoded chars in path
+    pattern = r"(https?://(?:www\.)?(?:linkedin\.com/in/|github\.com/)[a-zA-Z0-9_.%~:/?#\[\]@!$&'()*+,;=-]+)"
+    # Also catch links without http
+    pattern_no_http = r"(?:^|\s)((?:www\.)?(?:linkedin\.com/in/|github\.com/)[a-zA-Z0-9_.%~:/?#\[\]@!$&'()*+,;=-]+)"
+    
+    links = set()
+    for url in re.findall(pattern, text):
+        # Strip trailing slashes and whitespace
+        links.add(url.rstrip("/ "))
+    for url in re.findall(pattern_no_http, text):
+        cleaned = url.rstrip("/ ")
+        if not cleaned.startswith("http"):
+            links.add("https://" + cleaned)
+        else:
+            links.add(cleaned)
+    return list(links)
 
 
 def extract_name(text: str) -> Optional[str]:

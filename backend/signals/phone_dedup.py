@@ -29,6 +29,7 @@ def normalize_phone(phone: str) -> str:
 
 def _verify_phone_numverify(phone_digits: str) -> dict:
     """Call NumVerify API to verify a single phone number. Returns result dict or None on failure."""
+    NUMVERIFY_API_KEY = os.environ.get("NUMVERIFY_API_KEY", "")
     if not NUMVERIFY_API_KEY:
         return None
     # NumVerify expects digits; for 10-digit numbers default to India (+91)

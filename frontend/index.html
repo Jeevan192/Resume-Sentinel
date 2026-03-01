@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ResumeSentinel — AI-Powered Resume Fraud Detection</title>
+    <title>Resume Sentinel — AI-Powered Resume Fraud Detection</title>
     <meta name="description"
         content="Hybrid AI engine with 7-signal fraud detection pipeline. Built for HackWith AI 2026." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet" />
     <style>
         *,
@@ -20,29 +20,31 @@
         }
 
         :root {
-            --bg: #09090b;
-            --bg-card: rgba(24, 24, 27, .8);
-            --bg-card-hover: rgba(39, 39, 42, .9);
-            --border: rgba(63, 63, 70, .5);
-            --border-active: rgba(124, 58, 237, .4);
-            --text: #fafafa;
-            --text-muted: #a1a1aa;
+            --bg: #030304;
+            --bg-card: rgba(15, 17, 21, 0.85);
+            --bg-card-hover: rgba(26, 29, 36, 0.9);
+            --border: rgba(30, 41, 59, 0.7);
+            --border-active: rgba(252, 194, 0, 0.4);
+            --text: #ffffff;
+            --text-muted: #94A3B8;
             --text-dim: #71717a;
-            --primary: #7c3aed;
-            --primary-light: #a78bfa;
-            --primary-dim: rgba(124, 58, 237, .15);
+            --primary: #FCC200;
+            --primary-light: #FFD600;
+            --primary-dim: rgba(252, 194, 0, 0.12);
             --green: #22c55e;
-            --green-dim: rgba(34, 197, 94, .15);
+            --green-dim: rgba(34, 197, 94, 0.15);
             --yellow: #eab308;
-            --yellow-dim: rgba(234, 179, 8, .15);
+            --yellow-dim: rgba(234, 179, 8, 0.15);
             --red: #ef4444;
-            --red-dim: rgba(239, 68, 68, .15);
+            --red-dim: rgba(239, 68, 68, 0.15);
             --orange: #f97316;
-            --orange-dim: rgba(249, 115, 22, .15);
+            --orange-dim: rgba(249, 115, 22, 0.15);
             --blue: #3b82f6;
-            --blue-dim: rgba(59, 130, 246, .15);
+            --blue-dim: rgba(59, 130, 246, 0.15);
             --radius: 12px;
             --font: 'Inter', system-ui, sans-serif;
+            --font-heading: 'Space Grotesk', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         html {
@@ -63,7 +65,7 @@
             position: fixed;
             inset: 0;
             z-index: -1;
-            background-image: linear-gradient(rgba(124, 58, 237, .03) 1px, transparent 1px), linear-gradient(90deg, rgba(124, 58, 237, .03) 1px, transparent 1px);
+            background-image: linear-gradient(rgba(252, 194, 0, .02) 1px, transparent 1px), linear-gradient(90deg, rgba(252, 194, 0, .02) 1px, transparent 1px);
             background-size: 60px 60px
         }
 
@@ -71,7 +73,7 @@
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, .12), transparent)
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(252, 194, 0, .08), transparent)
         }
 
         .container {
@@ -86,7 +88,7 @@
             top: 0;
             z-index: 100;
             backdrop-filter: blur(16px) saturate(180%);
-            background: rgba(9, 9, 11, .75);
+            background: rgba(3, 3, 4, .8);
             border-bottom: 1px solid var(--border);
             padding: 12px 0
         }
@@ -102,13 +104,14 @@
             align-items: center;
             gap: 10px;
             font-weight: 700;
-            font-size: 17px
+            font-size: 17px;
+            font-family: var(--font-heading)
         }
 
         .nav-brand .logo {
             width: 30px;
             height: 30px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: linear-gradient(135deg, #EA580C, var(--primary), var(--primary-light));
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -134,7 +137,7 @@
             cursor: pointer;
             border: none;
             background: none;
-            font-family: var(--font);
+            font-family: var(--font-mono);
             transition: all .15s ease;
             white-space: nowrap
         }
@@ -242,11 +245,12 @@
             padding: 5px 14px;
             border-radius: 100px;
             background: var(--primary-dim);
-            border: 1px solid rgba(124, 58, 237, .3);
+            border: 1px solid rgba(252, 194, 0, .3);
             font-size: 12px;
             font-weight: 500;
-            color: var(--primary-light);
-            margin-bottom: 20px
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-family: var(--font-mono)
         }
 
         .hero h1 {
@@ -254,11 +258,12 @@
             font-weight: 800;
             letter-spacing: -.03em;
             line-height: 1.1;
-            margin-bottom: 12px
+            margin-bottom: 12px;
+            font-family: var(--font-heading)
         }
 
         .hero h1 .gradient {
-            background: linear-gradient(135deg, var(--primary-light), #c4b5fd, var(--primary));
+            background: linear-gradient(135deg, #EA580C, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text
@@ -307,7 +312,8 @@
         .upload-zone h3 {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 6px
+            margin-bottom: 6px;
+            font-family: var(--font-heading)
         }
 
         .upload-zone p {
@@ -359,14 +365,15 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #6d28d9);
-            color: #fff;
-            box-shadow: 0 4px 16px rgba(124, 58, 237, .25)
+            background: linear-gradient(135deg, #EA580C, var(--primary));
+            color: #000;
+            box-shadow: 0 4px 16px rgba(252, 194, 0, .25);
+            font-weight: 700
         }
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(124, 58, 237, .35)
+            box-shadow: 0 6px 20px rgba(252, 194, 0, .35)
         }
 
         .btn-primary:disabled {
@@ -414,7 +421,7 @@
 
         .progress-track {
             height: 3px;
-            background: rgba(63, 63, 70, .5);
+            background: rgba(30, 41, 59, .5);
             border-radius: 100px;
             overflow: hidden
         }
@@ -422,7 +429,7 @@
         .progress-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            background: linear-gradient(90deg, #EA580C, var(--primary), var(--primary-light));
             border-radius: 100px;
             transition: width .4s ease
         }
@@ -481,7 +488,7 @@
 
         .score-ring-bg {
             fill: none;
-            stroke: rgba(63, 63, 70, .4);
+            stroke: rgba(30, 41, 59, .4);
             stroke-width: 10
         }
 
@@ -504,19 +511,22 @@
         .score-number {
             font-size: 36px;
             font-weight: 800;
-            line-height: 1
+            line-height: 1;
+            font-family: var(--font-heading)
         }
 
         .score-label {
             font-size: 11px;
             color: var(--text-muted);
-            margin-top: 2px
+            margin-top: 2px;
+            font-family: var(--font-mono)
         }
 
         .score-meta h2 {
             font-size: 20px;
             font-weight: 700;
-            margin-bottom: 6px
+            margin-bottom: 6px;
+            font-family: var(--font-heading)
         }
 
         .score-meta p {
@@ -565,9 +575,15 @@
         /* SIGNAL CARDS */
         .signals-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 14px;
-            margin-bottom: 32px
+            margin-bottom: 0
+        }
+
+        @media(max-width:1024px) {
+            .signals-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
         }
 
         .signal-card {
@@ -595,7 +611,8 @@
             align-items: center;
             gap: 7px;
             font-weight: 600;
-            font-size: 13px
+            font-size: 13px;
+            font-family: var(--font-mono)
         }
 
         .signal-icon {
@@ -617,7 +634,7 @@
 
         .signal-bar-track {
             height: 5px;
-            background: rgba(63, 63, 70, .4);
+            background: rgba(30, 41, 59, .4);
             border-radius: 100px;
             margin: 10px 0 6px;
             overflow: hidden
@@ -642,7 +659,8 @@
             margin-bottom: 14px;
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 8px;
+            font-family: var(--font-heading)
         }
 
         .links-grid {
@@ -707,8 +725,8 @@
 
         /* AI CARD */
         .ai-card {
-            background: linear-gradient(135deg, rgba(124, 58, 237, .08), rgba(99, 102, 241, .04));
-            border: 1px solid rgba(124, 58, 237, .2);
+            background: linear-gradient(135deg, rgba(252, 194, 0, .06), rgba(234, 88, 12, .03));
+            border: 1px solid rgba(252, 194, 0, .2);
             border-radius: var(--radius);
             padding: 22px;
             margin-bottom: 32px
@@ -720,7 +738,8 @@
             margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: 8px;
+            font-family: var(--font-heading)
         }
 
         .ai-card .ai-text {
@@ -749,7 +768,10 @@
             font-size: 13px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: var(--text-muted)
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.5px
         }
 
         .entity-card ul {
@@ -760,7 +782,7 @@
         .entity-card li {
             font-size: 13px;
             padding: 4px 0;
-            border-bottom: 1px solid rgba(63, 63, 70, .3)
+            border-bottom: 1px solid rgba(30, 41, 59, .3)
         }
 
         .entity-card li:last-child {
@@ -774,7 +796,8 @@
             font-size: 11px;
             margin: 2px;
             background: var(--primary-dim);
-            color: var(--primary-light)
+            color: var(--primary);
+            font-family: var(--font-mono)
         }
 
         /* BATCH */
@@ -817,12 +840,14 @@
 
         .batch-name {
             font-weight: 600;
-            font-size: 14px
+            font-size: 14px;
+            font-family: var(--font-heading)
         }
 
         .batch-file {
             font-size: 12px;
-            color: var(--text-muted)
+            color: var(--text-muted);
+            font-family: var(--font-mono)
         }
 
         /* COMPARE */
@@ -879,16 +904,20 @@
         .metric-value {
             font-size: 32px;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            background: linear-gradient(135deg, #EA580C, var(--primary), var(--primary-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text
+            background-clip: text;
+            font-family: var(--font-heading)
         }
 
         .metric-label {
             font-size: 12px;
             color: var(--text-muted);
-            margin-top: 4px
+            margin-top: 4px;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.5px
         }
 
         .history-table {
@@ -909,7 +938,7 @@
         .history-table td {
             font-size: 13px;
             padding: 10px 14px;
-            border-bottom: 1px solid rgba(63, 63, 70, .3)
+            border-bottom: 1px solid rgba(30, 41, 59, .3)
         }
 
         /* FOOTER */
@@ -932,7 +961,10 @@
                 text-align: center
             }
 
-            .signals-grid,
+            .signals-grid {
+                grid-template-columns: 1fr !important
+            }
+
             .links-grid,
             .entity-grid {
                 grid-template-columns: 1fr
@@ -960,9 +992,9 @@
 
     <nav>
         <div class="container">
-            <div class="nav-brand">
-                <div class="logo">🛡️</div><span>ResumeSentinel</span>
-            </div>
+            <a href="landing.html" class="nav-brand" style="text-decoration:none;color:inherit;">
+                <div class="logo">🛡️</div><span>Resume Sentinel</span>
+            </a>
             <div class="nav-tabs">
                 <button class="nav-tab active" onclick="showPage('analyze')">🔍 Analyze</button>
                 <button class="nav-tab" onclick="showPage('batch')">📊 Batch</button>
@@ -1111,7 +1143,7 @@
 
     <footer>
         <div class="container">
-            <p>🛡️ ResumeSentinel — Built for HackWith AI 2026 · Hybrid Architecture: Python + Spring Boot · DEET
+            <p>🛡️ Resume Sentinel — Built for HackWith AI 2026 · Hybrid Architecture: Python + Spring Boot · DEET
                 Telangana</p>
         </div>
     </footer>
@@ -1145,10 +1177,11 @@
                 --bg: #f4f4f5;
                 --bg-card: #ffffff;
                 --bg-card-hover: #f1f5f9;
-                --border: #e4e4e7;
+                --border: #e2e8f0;
                 --text: #18181b;
-                --text-muted: #52525b;
+                --text-muted: #64748b;
                 --text-dim: #71717a;
+                --primary-dim: rgba(252, 194, 0, .1);
             }
             :root[data-theme="light"] nav { background: rgba(255,255,255,0.8); }
         `;
@@ -1197,7 +1230,36 @@
                 const fd = new FormData(); fd.append('file', selectedFile);
                 const r = await fetch(`${API}/validate_resume`, { method: 'POST', headers: { 'X-API-Key': KEY }, body: fd });
                 pf.style.width = '90%'; pt.textContent = '✨ Generating AI explanation...'; await sleep(200);
-                if (!r.ok) throw new Error('API Error: ' + r.status);
+                if (!r.ok) {
+                    const errBody = await r.json().catch(() => null);
+                    if (r.status === 422 && errBody?.detail?.error === 'NOT_A_RESUME') {
+                        pf.style.width = '100%'; pt.textContent = '❌ Rejected'; await sleep(300); pb.classList.remove('show');
+                        const det = errBody.detail;
+                        res.innerHTML = `
+                        <div class="animate" style="max-width:640px;margin:0 auto;text-align:center;padding:40px 28px;">
+                            <div style="font-size:64px;margin-bottom:16px">🚫</div>
+                            <h2 style="font-size:22px;font-weight:800;margin-bottom:8px;color:var(--red)">Not a Resume</h2>
+                            <p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">${escapeHtml(det.message)}</p>
+                            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:left;margin-bottom:20px">
+                                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                                    <span style="color:var(--text-muted);font-size:13px">Resume Confidence</span>
+                                    <span style="font-weight:700;color:var(--red)">${Math.round((det.confidence || 0) * 100)}%</span>
+                                </div>
+                                <div style="height:5px;background:rgba(30,41,59,.4);border-radius:100px;overflow:hidden;margin-bottom:12px">
+                                    <div style="height:100%;width:${Math.round((det.confidence || 0) * 100)}%;background:var(--red);border-radius:100px"></div>
+                                </div>
+                                <div style="color:var(--text-muted);font-size:12px;margin-bottom:6px">Word count: <strong>${det.word_count || 0}</strong></div>
+                                <div style="color:var(--text-muted);font-size:12px;">Resume signals detected: <strong>${(det.signals_found || []).length ? det.signals_found.join(', ') : 'None'}</strong></div>
+                            </div>
+                            <p style="color:var(--text-dim);font-size:12px;margin-bottom:20px">${escapeHtml(det.suggestion || '')}</p>
+                            <button class="btn btn-primary" onclick="resetAndNew()">📄 Try Another File</button>
+                        </div>`;
+                        document.getElementById('analyzeBtn').disabled = false;
+                        return;
+                    }
+                    const errMsg = errBody?.detail?.message || errBody?.detail || `API Error: ${r.status}`;
+                    throw new Error(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
+                }
                 const d = await r.json();
                 pf.style.width = '100%'; pt.textContent = '✅ Done!'; await sleep(300); pb.classList.remove('show');
                 renderResults(d);
@@ -1223,6 +1285,18 @@
         </div>
     </div>`;
 
+            // Duplicate Submission Warning
+            const dup = d.duplicate_submission;
+            if (dup && dup.is_duplicate) {
+                html += `<div class="animate stagger-1" style="padding:14px 20px;background:var(--red-dim);border:1px solid rgba(239,68,68,.4);border-radius:var(--radius);margin-bottom:16px;display:flex;align-items:center;gap:12px">
+                    <span style="font-size:22px">🔁</span>
+                    <div>
+                        <div style="font-weight:700;color:var(--red)">Duplicate Submission Detected — Attempt #${dup.times_submitted}</div>
+                        <div style="font-size:12px;color:var(--text-dim)">Original score: ${dup.original_score} → Penalized: +${dup.penalty_applied} pts. Re-submitting the same resume increases suspicion.</div>
+                    </div>
+                </div>`;
+            }
+
             // AI Explanation
             if (explanation) {
                 html += `<div class="ai-card animate stagger-1"><h3>🤖 AI Analysis Summary</h3><div class="ai-text">${escapeHtml(explanation)}</div></div>`;
@@ -1231,9 +1305,9 @@
             // Signals
             const meta = { timeline_overlap: { icon: '📅', label: 'Timeline', max: 40 }, email_validation: { icon: '📧', label: 'Email', max: 20 }, phone_validation: { icon: '📱', label: 'Phone', max: 15 }, jd_plagiarism: { icon: '📝', label: 'JD Plagiarism', max: 30 }, semantic_similarity: { icon: '🔍', label: 'Similarity', max: 35 }, skills_mismatch: { icon: '🎯', label: 'Skills', max: 20 } };
             html += `<div class="section-title animate stagger-2">📊 Detection Signals</div>`;
-            html += `<div style="display:flex; flex-wrap:wrap; gap:24px; margin-bottom: 24px;">`;
-            html += `<div class="animate stagger-2" style="flex:1; min-width:300px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px;"><div id="radarChart" style="width:100%;height:350px;"></div></div>`;
-            html += `<div class="signals-grid animate stagger-2" style="flex:2; min-width:300px;">`;
+            html += `<div class="animate stagger-2" style="display:grid; grid-template-columns: 1fr 2fr; gap:24px; margin-bottom:24px; align-items:start;">`;
+            html += `<div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; position:sticky; top:80px;"><div id="radarChart" style="width:100%;height:370px;"></div></div>`;
+            html += `<div class="signals-grid">`;
 
             for (const [k, m] of Object.entries(meta)) {
                 const s = signals[k] || {}, sc = s.score || 0, sev = s.severity || 'NONE', hl = s.headline || s.explanation || 'No concerns.';
@@ -1243,14 +1317,18 @@
             html += `</div></div>`;
 
             // Profile links
+            html += `<div class="section-title animate stagger-3">🔗 Profile Verification (Serper OSINT)</div><div class="links-grid">`;
             if (links.length) {
-                html += `<div class="section-title animate stagger-3">🔗 Profile Verification</div><div class="links-grid">`;
                 for (const l of links) {
                     const v = l.is_valid, ic = l.url?.includes('linkedin') ? '💼' : l.url?.includes('github') ? '🐙' : '🔗';
-                    html += `<div class="link-card"><div class="link-icon ${v ? 'valid' : 'invalid'}">${ic}</div><div class="link-info"><div class="link-url">${escapeHtml(l.url || '')}</div><div class="link-status">${v ? '✅' : '❌'} ${escapeHtml(l.status || '')}</div></div></div>`;
+                    const verdict = l.verdict || '';
+                    const verdictBadge = verdict === 'SERPER_INDEXED' ? '<span style="background:var(--blue-dim);color:var(--blue);padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-left:6px">OSINT</span>' : '';
+                    html += `<div class="link-card"><div class="link-icon ${v ? 'valid' : 'invalid'}">${ic}</div><div class="link-info"><div class="link-url">${escapeHtml(l.url || '')}${verdictBadge}</div><div class="link-status">${v ? '✅' : '❌'} ${escapeHtml(l.status || '')}</div></div></div>`;
                 }
-                html += `</div>`;
+            } else {
+                html += `<div class="link-card" style="justify-content:center;color:var(--text-muted);font-size:13px;">No profile links found or verified. Serper API key may not be configured.</div>`;
             }
+            html += `</div>`;
 
             // Entities
             const emails = d.emails || [], phones = d.phones || [], skills = entities.skills || d.skills || {};
@@ -1336,28 +1414,28 @@
                 radarVals.push(radarVals[0]); // Close polygon
 
                 const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
-                const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
-                const fontColor = isDark ? '#e0e0e0' : '#333';
+                const gridColor = isDark ? 'rgba(30,41,59,0.5)' : 'rgba(0,0,0,0.08)';
+                const fontColor = isDark ? '#ffffff' : '#333';
 
                 const radarData = [{
                     type: 'scatterpolar',
                     r: radarVals,
                     theta: categories,
                     fill: 'toself',
-                    fillcolor: 'rgba(79, 195, 247, 0.15)',
-                    line: { color: '#4fc3f7', width: 2 },
-                    marker: { size: 6, color: '#4fc3f7' }
+                    fillcolor: 'rgba(252, 194, 0, 0.1)',
+                    line: { color: '#FCC200', width: 2 },
+                    marker: { size: 6, color: '#FCC200' }
                 }];
 
                 const radarLayout = {
                     polar: {
                         bgcolor: 'rgba(0,0,0,0)',
                         radialaxis: { visible: true, range: [0, 100], gridcolor: gridColor, linecolor: gridColor, tickfont: { color: fontColor, size: 10 } },
-                        angularaxis: { gridcolor: gridColor, linecolor: gridColor, tickfont: { color: fontColor, size: 12 } }
+                        angularaxis: { gridcolor: gridColor, linecolor: gridColor, tickfont: { color: fontColor, size: 11 } }
                     },
                     paper_bgcolor: 'rgba(0,0,0,0)',
                     plot_bgcolor: 'rgba(0,0,0,0)',
-                    margin: { t: 30, b: 30, l: 40, r: 40 },
+                    margin: { t: 50, b: 50, l: 60, r: 60 },
                     showlegend: false
                 };
 

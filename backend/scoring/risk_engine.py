@@ -11,38 +11,43 @@ logger = logging.getLogger(__name__)
 SIGNAL_WEIGHTS = {
     "timeline_overlap": {
         "max_score": 40,
-        "weight": 0.22,
+        "weight": 0.20,
         "display_name": "Timeline Risk",
     },
     "email_validation": {
         "max_score": 20,
-        "weight": 0.13,
+        "weight": 0.12,
         "display_name": "Contact Risk (Email)",
     },
     "phone_validation": {
         "max_score": 15,
-        "weight": 0.08,
+        "weight": 0.07,
         "display_name": "Contact Risk (Phone)",
     },
     "jd_plagiarism": {
         "max_score": 30,
-        "weight": 0.18,
+        "weight": 0.16,
         "display_name": "JD Plagiarism Risk",
     },
     "semantic_similarity": {
         "max_score": 35,
-        "weight": 0.17,
+        "weight": 0.15,
         "display_name": "Similarity Risk",
     },
     "skills_mismatch": {
         "max_score": 20,
-        "weight": 0.08,
+        "weight": 0.07,
         "display_name": "Skills Mismatch",
     },
     "profile_validation": {
         "max_score": 30,
-        "weight": 0.14,
+        "weight": 0.13,
         "display_name": "OSINT Profile Risk",
+    },
+    "gleif_verification": {
+        "max_score": 25,
+        "weight": 0.10,
+        "display_name": "Company Verification (GLEIF)",
     },
 }
 

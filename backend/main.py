@@ -7,6 +7,7 @@ Endpoints: /validate_resume, /batch_validate, /compare_resumes, /health
 """
 import os
 import sys
+import re
 import json
 import logging
 import hashlib
@@ -44,9 +45,10 @@ from signals.jd_plagiarism import check_jd_plagiarism
 from signals.semantic_similarity import check_semantic_similarity
 from signals.skills_mismatch import check_skills_mismatch
 from signals.link_validator import verify_profile_links
+from signals.gleif_verifier import verify_companies_gleif
+from signals.diff_engine import diff_compare
 from scoring.risk_engine import calculate_risk_score, get_risk_color, get_risk_label
 from scoring.explainer import generate_explanation, generate_signal_summary
-import redis
 
 from db import hydrate_store_from_db, save_resume_to_db, save_contacts_to_db, save_experiences_to_db
 
@@ -54,25 +56,14 @@ from db import hydrate_store_from_db, save_resume_to_db, save_contacts_to_db, sa
 # Hydrate memory from PostgreSQL cluster on boot to maintain DEET data persistence
 resume_store = hydrate_store_from_db()
 
-# ─── Redis Cache Setup ──────────────────────────────────
-redis_client = None
-in_memory_cache = {}
-try:
-    redis_client = redis.Redis(host='localhost', port=6379, db=0, socket_connect_timeout=1)
-    redis_client.ping()
-    logger.info("Connected to Redis cache successfully.")
-except Exception as e:
-    logger.warning(f"Redis not available, falling back to in-memory dict cache. ({e})")
-    redis_client = None
-
 # ─── Frontend path ──────────────────────────────────────
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "frontend")
 
 # ─── FastAPI App ─────────────────────────────────────────
 app = FastAPI(
     title="🛡️ ResumeGuard — Fraud Detection Engine",
-    description="AI-powered resume fraud detection with 7-signal analysis pipeline",
-    version="2.0.0",
+    description="AI-powered resume fraud detection with 8-signal analysis pipeline + GLEIF verification",
+    version="3.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
 )
@@ -109,6 +100,123 @@ def parse_file(file_bytes: bytes, filename: str) -> dict:
             return {"text": "", "success": False, "error": str(e)}
     else:
         return {"text": "", "success": False, "error": f"Unsupported file type: .{ext}"}
+
+
+# ─── Resume Content Classifier ──────────────────────────
+# Heuristic scoring to determine if a document is actually a resume
+RESUME_SECTION_KEYWORDS = {
+    "work experience", "education", "skills", "projects", "certifications",
+    "work history", "employment history", "qualifications", "career objective",
+    "professional summary", "internship", "achievements",
+    "technical skills", "proficiency", "coursework",
+    "volunteer experience", "personal projects", "professional experience",
+    "academic qualifications", "areas of expertise",
+}
+
+# Patterns that strongly suggest the document is NOT a resume
+NON_RESUME_PATTERNS = [
+    r"(?:chapter|table of contents|abstract|bibliography|appendix|acknowledgement)",
+    r"(?:invoice|receipt|order|shipment|tracking|payment)",
+    r"(?:terms and conditions|privacy policy|end user license)",
+    r"(?:dear sir|dear madam|to whom it may concern|yours sincerely|yours faithfully)",
+    r"(?:plaintiff|defendant|court|verdict|judgment|statute)",
+    r"(?:experiment|hypothesis|methodology|literature review|findings|conclusion)",
+]
+
+def validate_resume_content(text: str) -> dict:
+    """
+    Heuristic check: is this document plausibly a resume?
+    Returns {"is_resume": bool, "confidence": float, "reason": str, "signals_found": list}
+    """
+    signals_found = []
+    score = 0
+    text_lower = text.lower()
+    word_count = len(text.split())
+
+    # 1. Minimum word count (a real resume has at least ~40 words)
+    if word_count < 30:
+        return {
+            "is_resume": False,
+            "confidence": 0.0,
+            "reason": f"Document has only {word_count} words — too short to be a resume.",
+            "signals_found": [],
+        }
+    if word_count >= 80:
+        score += 1
+        signals_found.append("adequate_length")
+
+    # 2. Contains email address
+    if re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text):
+        score += 2
+        signals_found.append("has_email")
+
+    # 3. Contains phone number
+    if re.search(r"\+?\d[\d\s\-.()]{8,15}\d", text):
+        score += 1
+        signals_found.append("has_phone")
+
+    # 4. Contains resume section keywords
+    section_hits = [kw for kw in RESUME_SECTION_KEYWORDS if kw in text_lower]
+    if len(section_hits) >= 3:
+        score += 3
+        signals_found.append(f"section_keywords({len(section_hits)})")
+    elif len(section_hits) >= 1:
+        score += 1
+        signals_found.append(f"section_keywords({len(section_hits)})")
+
+    # 5. Contains date ranges (employment dates)
+    date_ranges = re.findall(
+        r"(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s*\d{4}\s*[\-–—to]+",
+        text, re.IGNORECASE
+    )
+    year_ranges = re.findall(r"(?:19|20)\d{2}\s*[\-–—]+\s*(?:(?:19|20)\d{2}|[Pp]resent|[Cc]urrent)", text)
+    if date_ranges or year_ranges:
+        score += 2
+        signals_found.append("has_date_ranges")
+
+    # 6. Contains degree/education keywords
+    if re.search(r"(?:B\.?Tech|B\.?E|B\.?Sc|B\.?S|Bachelor|M\.?Tech|M\.?S|Master|Ph\.?D|MBA|Diploma)", text, re.IGNORECASE):
+        score += 2
+        signals_found.append("has_education")
+
+    # 7. Contains known tech/soft skills (at least 2)
+    from extractors.entity_extractor import TECH_SKILLS, SOFT_SKILLS
+    skill_count = sum(1 for s in TECH_SKILLS if s in text_lower) + sum(1 for s in SOFT_SKILLS if s in text_lower)
+    if skill_count >= 3:
+        score += 2
+        signals_found.append(f"skills_found({skill_count})")
+    elif skill_count >= 1:
+        score += 1
+        signals_found.append(f"skills_found({skill_count})")
+
+    # 8. Contains LinkedIn or GitHub link
+    if re.search(r"linkedin\.com|github\.com", text_lower):
+        score += 1
+        signals_found.append("has_profile_link")
+
+    # 9. Negative signals — penalize documents that look like non-resume content
+    for pattern in NON_RESUME_PATTERNS:
+        if re.search(pattern, text_lower):
+            score -= 3
+            signals_found.append("non_resume_content_detected")
+            break  # one penalty is enough
+
+    # Threshold: max possible ~14, require at least 5 to be plausible
+    max_score = 14
+    confidence = round(min(max(score, 0) / max_score, 1.0), 2)
+    is_resume = score >= 5
+
+    if not is_resume:
+        reason = "This document does not appear to be a resume. No recognizable resume elements found (no contact info, experience sections, skills, or education)."
+    else:
+        reason = "ok"
+
+    return {
+        "is_resume": is_resume,
+        "confidence": confidence,
+        "reason": reason,
+        "signals_found": signals_found,
+    }
 
 
 def run_analysis(text: str, filename: str) -> dict:
@@ -190,6 +298,15 @@ def run_analysis(text: str, filename: str) -> dict:
         logger.error(f"Profile link validation failed: {e}")
         signal_results["profile_validation"] = {"score": 0, "severity": "NONE", "explanation": f"Error: {e}"}
 
+    # Signal 8: GLEIF Company Verification
+    try:
+        signal_results["gleif_verification"] = verify_companies_gleif(
+            entities.get("experiences", [])
+        )
+    except Exception as e:
+        logger.error(f"GLEIF verification failed: {e}")
+        signal_results["gleif_verification"] = {"score": 0, "severity": "NONE", "explanation": f"Error: {e}"}
+
     # Step 3: Calculate composite risk score
     logger.info("Calculating risk score...")
     risk_score = calculate_risk_score(signal_results)
@@ -226,7 +343,9 @@ def run_analysis(text: str, filename: str) -> dict:
             "similarity_score": signal_results.get("semantic_similarity", {}).get("score", 0),
             "mismatch_score": signal_results.get("skills_mismatch", {}).get("score", 0),
             "profile_score": signal_results.get("profile_validation", {}).get("score", 0),
+            "gleif_score": signal_results.get("gleif_verification", {}).get("score", 0),
         },
+        "gleif_verification": signal_results.get("gleif_verification", {}).get("verified_companies", []),
         "email_verification": signal_results.get("email_validation", {}).get("verified_emails", []),
         "phone_verification": signal_results.get("phone_validation", {}).get("verified_phones", []),
         "profile_verification": signal_results.get("profile_validation", {}).get("verified_links", []),
@@ -283,6 +402,8 @@ def _store_resume_data(filename: str, entities: dict, signal_results: dict, text
         "emails": emails,
         "phones": phones,
         "text_hash": text_hash,
+        "risk_score": risk_score.get("composite_score", 0),
+        "risk_level": risk_score.get("risk_level", "UNKNOWN"),
     })
 
     # 2. Persist to PostgreSQL Database
@@ -311,10 +432,11 @@ async def api_info():
     """API info endpoint."""
     return {
         "name": "🛡️ ResumeGuard — Fraud Detection Engine",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "status": "running",
         "signals": ["timeline_overlap", "email_validation", "phone_validation",
-                     "jd_plagiarism", "semantic_similarity", "skills_mismatch", "profile_validation"],
+                     "jd_plagiarism", "semantic_similarity", "skills_mismatch",
+                     "profile_validation", "gleif_verification"],
         "resumes_analyzed": len(resume_store["resumes"]),
     }
 
@@ -373,6 +495,10 @@ async def validate_resume(
     if len(file_bytes) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File too large (max 10MB)")
 
+    # Minimum size check
+    if len(file_bytes) < 10:
+        raise HTTPException(status_code=400, detail="File too small to be a valid resume")
+
     # Parse file
     parse_result = parse_file(file_bytes, file.filename)
     if not parse_result.get("success") and not parse_result.get("text"):
@@ -383,39 +509,86 @@ async def validate_resume(
 
     text = parse_result["text"]
 
-    # Run analysis
+    # ─── Resume Content Validation ───────────────────────────
+    content_check = validate_resume_content(text)
+    if not content_check["is_resume"]:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "NOT_A_RESUME",
+                "message": content_check["reason"],
+                "confidence": content_check["confidence"],
+                "word_count": len(text.split()),
+                "signals_found": content_check["signals_found"],
+                "suggestion": "Please upload a valid resume document (PDF, DOCX, or TXT) containing contact information, work experience, education, or skills.",
+            }
+        )
+
+    # Run analysis — always re-evaluate, never return cached results
     try:
-        # Check cache first
         file_hash = hashlib.sha256(text.encode()).hexdigest()
-        cache_key = f"resume_analysis:{file_hash}"
-        cached_result = None
-        
-        if redis_client:
-            try:
-                cached = redis_client.get(cache_key)
-                if cached:
-                    logger.info(f"Returning cached analysis for {file.filename} from Redis.")
-                    cached_result = json.loads(cached.decode('utf-8'))
-            except Exception as e:
-                logger.warning(f"Redis get failed: {e}")
-        else:
-            if cache_key in in_memory_cache:
-                logger.info(f"Returning cached analysis for {file.filename} from Memory fallback.")
-                cached_result = in_memory_cache[cache_key]
 
-        if cached_result:
-            return JSONResponse(content=cached_result)
+        # Check how many times this exact resume was submitted before
+        prev_count = resume_store["submission_counts"].get(file_hash, 0)
 
+        # Always run full analysis pipeline (no caching)
         analysis = await run_in_threadpool(run_analysis, text, file.filename)
-        
-        # Save to cache
-        if redis_client:
+
+        # ─── Duplicate Submission Penalty ────────────────────────
+        if prev_count > 0:
+            penalty = min(prev_count * 7, 25)  # +7 per repeat, capped at +25
+            original_score = analysis["risk_score"]
+            new_score = min(round(original_score + penalty, 1), 100)
+
+            analysis["risk_score"] = new_score
+            # Recalculate risk level based on penalized score
+            if new_score >= 85:
+                analysis["risk_level"] = "CRITICAL"
+            elif new_score >= 65:
+                analysis["risk_level"] = "HIGH"
+            elif new_score >= 40:
+                analysis["risk_level"] = "MEDIUM"
+            elif new_score >= 20:
+                analysis["risk_level"] = "LOW"
+            else:
+                analysis["risk_level"] = "CLEAN"
+            analysis["risk_label"] = get_risk_label(new_score)
+            analysis["risk_color"] = get_risk_color(new_score)
+            analysis["alert"] = new_score >= 65
+
+            analysis["duplicate_submission"] = {
+                "is_duplicate": True,
+                "times_submitted": prev_count + 1,
+                "penalty_applied": penalty,
+                "original_score": original_score,
+            }
+            logger.warning(
+                f"Duplicate submission #{prev_count + 1} for '{file.filename}' "
+                f"(hash={file_hash[:12]}…). Penalty +{penalty} → {new_score}"
+            )
+
+            # Update the DB record with the penalized score
             try:
-                redis_client.setex(cache_key, 3600, json.dumps(analysis))  # Cache for 1 hour
+                save_resume_to_db(
+                    filename=file.filename,
+                    candidate_name=analysis.get("name", "Unknown"),
+                    text_hash=file_hash,
+                    raw_text=text,
+                    risk_score=new_score,
+                    risk_level=analysis["risk_level"],
+                    data_json={"penalized": True, "original_score": original_score, "penalty": penalty},
+                )
             except Exception as e:
-                pass
+                logger.error(f"Failed to update penalized score in DB: {e}")
         else:
-            in_memory_cache[cache_key] = analysis
+            analysis["duplicate_submission"] = {
+                "is_duplicate": False,
+                "times_submitted": 1,
+                "penalty_applied": 0,
+            }
+
+        # Increment submission count
+        resume_store["submission_counts"][file_hash] = prev_count + 1
 
         return JSONResponse(content=analysis)
     except Exception as e:
@@ -424,7 +597,10 @@ async def validate_resume(
 
 
 @app.post("/batch_validate")
-async def batch_validate(files: list[UploadFile] = File(...)):
+async def batch_validate(
+    files: list[UploadFile] = File(...),
+    api_key: str = Security(verify_api_key)
+):
     """
     Analyze multiple resumes in batch.
     Returns individual results + cross-resume analysis.
@@ -477,7 +653,8 @@ async def batch_validate(files: list[UploadFile] = File(...)):
 @app.post("/compare_resumes")
 async def compare_resumes(
     file1: UploadFile = File(...),
-    file2: UploadFile = File(...)
+    file2: UploadFile = File(...),
+    api_key: str = Security(verify_api_key)
 ):
     """Compare two resumes side-by-side for similarity."""
     results = []
@@ -533,6 +710,36 @@ async def get_history():
     })
 
 
+@app.post("/diff_compare")
+async def diff_compare_endpoint(
+    file1: UploadFile = File(...),
+    file2: UploadFile = File(...),
+    api_key: str = Security(verify_api_key)
+):
+    """
+    Deterministic diff comparison between two resumes.
+    Returns similarity score, matching blocks, highlight spans,
+    n-gram overlap, and template fingerprints.
+    """
+    texts = []
+    filenames = []
+    for f in [file1, file2]:
+        file_bytes = await f.read()
+        parse_result = parse_file(file_bytes, f.filename)
+        if not parse_result.get("text"):
+            raise HTTPException(status_code=422, detail=f"Cannot parse {f.filename}")
+        texts.append(parse_result["text"])
+        filenames.append(f.filename)
+
+    result = await run_in_threadpool(diff_compare, texts[0], texts[1])
+
+    return JSONResponse(content={
+        "file1": filenames[0],
+        "file2": filenames[1],
+        **result,
+    })
+
+
 @app.get("/stats")
 async def get_stats():
     """Get overall system statistics."""
@@ -561,8 +768,8 @@ async def export_csv():
             r.get("filename", ""),
             round(r.get("risk_score", 0), 1),
             r.get("risk_level", ""),
-            ", ".join(r.get("emails", [])),
-            ", ".join(r.get("phones", [])),
+            ", ".join(r.get("emails", [])) if isinstance(r.get("emails"), list) else "",
+            ", ".join(r.get("phones", [])) if isinstance(r.get("phones"), list) else "",
             r.get("analyzed_at", ""),
         ])
     
@@ -584,6 +791,7 @@ async def reset_store():
     resume_store["phones_seen"] = []
     resume_store["experiences_seen"] = []
     resume_store["embeddings"] = []
+    resume_store["submission_counts"] = {}
     
     # Clear PostgreSQL tables
     try:

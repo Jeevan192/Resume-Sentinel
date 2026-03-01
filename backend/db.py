@@ -141,7 +141,7 @@ def save_experiences_to_db(experiences, source_resume):
 
 def hydrate_store_from_db():
     """Load historical data from DB into memory cache."""
-    cache = {"resumes": [], "emails_seen": [], "phones_seen": [], "experiences_seen": [], "embeddings": []}
+    cache = {"resumes": [], "emails_seen": [], "phones_seen": [], "experiences_seen": [], "embeddings": [], "submission_counts": {}}
     db = _get_session()
     if not db: return cache
     
@@ -161,8 +161,14 @@ def hydrate_store_from_db():
             cache["resumes"].append({
                 "filename": res.filename,
                 "name": res.candidate_name,
-                "text_hash": res.text_hash
+                "text_hash": res.text_hash,
+                "risk_score": res.risk_score or 0,
+                "risk_level": res.risk_level or "UNKNOWN",
+                "analyzed_at": res.analyzed_at.isoformat() if res.analyzed_at else "",
             })
+            # Track submission counts — each DB record means at least 1 prior submission
+            if res.text_hash:
+                cache["submission_counts"][res.text_hash] = cache["submission_counts"].get(res.text_hash, 0) + 1
             
     except Exception as e:
         logger.error(f"Failed to hydrate memory from DB: {e}")

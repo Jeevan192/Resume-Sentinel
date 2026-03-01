@@ -32,27 +32,27 @@ API_URL = os.environ.get("API_URL", "http://localhost:8000").rstrip("/")
 # ─── Utility Functions ───────────────────────────────────
 
 def get_risk_color(score):
-    if score >= 85: return "#ef5350"
-    elif score >= 65: return "#ff7043"
-    elif score >= 40: return "#ffa726"
-    elif score >= 20: return "#66bb6a"
-    return "#4fc3f7"
+    if score >= 85: return "#ef4444"
+    elif score >= 65: return "#f97316"
+    elif score >= 40: return "#eab308"
+    elif score >= 20: return "#22c55e"
+    return "#FCC200"
 
 def get_risk_gradient(score):
-    if score >= 85: return "linear-gradient(135deg, #ff512f 0%, #dd2476 100%)"
-    elif score >= 65: return "linear-gradient(135deg, #ff7043 0%, #ff5722 100%)"
-    elif score >= 40: return "linear-gradient(135deg, #ffa726 0%, #ff9800 100%)"
-    elif score >= 20: return "linear-gradient(135deg, #66bb6a 0%, #4caf50 100%)"
-    return "linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%)"
+    if score >= 85: return "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
+    elif score >= 65: return "linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+    elif score >= 40: return "linear-gradient(135deg, #eab308 0%, #ca8a04 100%)"
+    elif score >= 20: return "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+    return "linear-gradient(135deg, #FCC200 0%, #FFD600 100%)"
 
 def get_severity_color(severity):
     return {
-        "CRITICAL": "#ef5350",
-        "HIGH": "#ff7043",
-        "MEDIUM": "#ffa726",
-        "LOW": "#66bb6a",
-        "NONE": "#4fc3f7",
-    }.get(severity, "#9e9e9e")
+        "CRITICAL": "#ef4444",
+        "HIGH": "#f97316",
+        "MEDIUM": "#eab308",
+        "LOW": "#22c55e",
+        "NONE": "#FCC200",
+    }.get(severity, "#94A3B8")
 
 def create_gauge_chart(score, title="Risk Score"):
     """Create a beautiful donut gauge chart."""
@@ -62,7 +62,7 @@ def create_gauge_chart(score, title="Risk Score"):
         values=[score, 100 - score],
         hole=0.75,
         marker=dict(
-            colors=[color, "rgba(255,255,255,0.05)"],
+            colors=[color, "rgba(30,41,59,0.3)"],
             line=dict(width=0)
         ),
         textinfo="none",
@@ -82,13 +82,13 @@ def create_gauge_chart(score, title="Risk Score"):
             dict(
                 text=f"<b>{score}</b>",
                 x=0.5, y=0.55,
-                font=dict(size=48, color=color, family="Inter"),
+                font=dict(size=48, color=color, family="Space Grotesk"),
                 showarrow=False,
             ),
             dict(
                 text=title,
                 x=0.5, y=0.35,
-                font=dict(size=14, color="#9e9e9e", family="Inter"),
+                font=dict(size=14, color="#94A3B8", family="JetBrains Mono"),
                 showarrow=False,
             ),
         ],
@@ -117,9 +117,9 @@ def create_signal_radar(signals):
         r=normalized,
         theta=categories,
         fill="toself",
-        fillcolor="rgba(79, 195, 247, 0.15)",
-        line=dict(color="#4fc3f7", width=2),
-        marker=dict(size=6, color="#4fc3f7"),
+        fillcolor="rgba(252, 194, 0, 0.12)",
+        line=dict(color="#FCC200", width=2),
+        marker=dict(size=6, color="#FCC200"),
     ))
 
     fig.update_layout(
@@ -128,14 +128,14 @@ def create_signal_radar(signals):
             radialaxis=dict(
                 visible=True,
                 range=[0, 100],
-                gridcolor="rgba(255,255,255,0.08)",
-                linecolor="rgba(255,255,255,0.08)",
-                tickfont=dict(color="#9e9e9e", size=10),
+                gridcolor="rgba(30,41,59,0.5)",
+                linecolor="rgba(30,41,59,0.5)",
+                tickfont=dict(color="#94A3B8", size=10),
             ),
             angularaxis=dict(
-                gridcolor="rgba(255,255,255,0.08)",
-                linecolor="rgba(255,255,255,0.08)",
-                tickfont=dict(color="#e0e0e0", size=12),
+                gridcolor="rgba(30,41,59,0.5)",
+                linecolor="rgba(30,41,59,0.5)",
+                tickfont=dict(color="#ffffff", size=12, family="JetBrains Mono"),
             ),
         ),
         paper_bgcolor="rgba(0,0,0,0)",
@@ -160,7 +160,7 @@ def create_signal_bar(signals):
         signals.get("mismatch_score", 0),
         signals.get("profile_score", 0),
     ]
-    colors = [get_risk_color((v / m) * 100) if m > 0 else "#4fc3f7" for v, m in zip(values, max_vals)]
+    colors = [get_risk_color((v / m) * 100) if m > 0 else "#FCC200" for v, m in zip(values, max_vals)]
 
     fig = go.Figure(go.Bar(
         x=values,
@@ -177,12 +177,12 @@ def create_signal_bar(signals):
         margin=dict(t=10, b=10, l=10, r=10),
         height=280,
         xaxis=dict(
-            gridcolor="rgba(255,255,255,0.08)",
-            tickfont=dict(color="#9e9e9e"),
+            gridcolor="rgba(30,41,59,0.5)",
+            tickfont=dict(color="#94A3B8"),
             title="",
         ),
         yaxis=dict(
-            tickfont=dict(color="#e0e0e0", size=13),
+            tickfont=dict(color="#ffffff", size=13, family="JetBrains Mono"),
         ),
     )
     return fig
@@ -193,10 +193,10 @@ with st.sidebar:
     st.markdown("""
     <div style="text-align: center; padding: 1rem 0;">
         <p style="font-size: 3rem; margin: 0;">🛡️</p>
-        <h2 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        <h2 style="background: linear-gradient(135deg, #EA580C 0%, #FCC200 50%, #FFD600 100%); 
                     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-                    font-weight: 800; margin: 0;">ResumeSentinel</h2>
-        <p style="color: #9e9e9e; font-size: 0.85rem;">AI-Powered Fraud Detection</p>
+                    font-weight: 800; margin: 0; font-family: 'Space Grotesk', system-ui, sans-serif;">Resume Sentinel</h2>
+        <p style="color: #94A3B8; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 1px;">AI-Powered Fraud Detection</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -305,23 +305,23 @@ if page == "🔍 Analyze Resume":
         with col_info:
             st.markdown(f"""
             <div class="glass-card animate-in">
-                <h3 style="color: {color}; font-size: 1.5rem; margin-bottom: 0.5rem;">
+                <h3 style="color: {color}; font-size: 1.5rem; margin-bottom: 0.5rem; font-family: 'Space Grotesk', system-ui, sans-serif;">
                     {data.get('risk_color', '')} {risk_level}
                 </h3>
-                <p style="color: #e0e0e0; font-size: 1rem; margin-bottom: 1rem;">
+                <p style="color: #ffffff; font-size: 1rem; margin-bottom: 1rem;">
                     {data.get('risk_label', '')}
                 </p>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                     <div>
-                        <span style="color: #9e9e9e; font-size: 0.8rem;">Candidate</span><br>
+                        <span style="color: #94A3B8; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.5px;">Candidate</span><br>
                         <span style="font-weight: 700; font-size: 1.1rem;">{data.get('name', 'Unknown')}</span>
                     </div>
                     <div>
-                        <span style="color: #9e9e9e; font-size: 0.8rem;">Signals Fired</span><br>
+                        <span style="color: #94A3B8; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.5px;">Signals Fired</span><br>
                         <span style="font-weight: 700; font-size: 1.1rem;">{data.get('active_signals', 0)}/6</span>
                     </div>
                     <div>
-                        <span style="color: #9e9e9e; font-size: 0.8rem;">Top Concern</span><br>
+                        <span style="color: #94A3B8; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.5px;">Top Concern</span><br>
                         <span style="font-weight: 700; font-size: 1.1rem;">{data.get('most_critical_signal', 'None')}</span>
                     </div>
                 </div>
@@ -388,7 +388,7 @@ if page == "🔍 Analyze Resume":
                     <div class="signal-icon">{icon}</div>
                     <div class="signal-name">{name}</div>
                     <div class="signal-score" style="color: {col_color};">{val}</div>
-                    <div style="color: #9e9e9e; font-size: 0.75rem;">/ {max_val}</div>
+                <div style="color: #94A3B8; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;">/ {max_val}</div>
                     <div class="progress-bar-bg" style="margin-top: 0.5rem;">
                         <div class="progress-bar-fill" style="width: {pct}%; background: {col_color};"></div>
                     </div>
@@ -442,10 +442,10 @@ if page == "🔍 Analyze Resume":
                     is_disp = ev.get("is_disposable", False)
                     
                     if status == "api_error":
-                        badge_color = "#ffa726"
+                        badge_color = "#eab308"
                         badge_text = "API ERROR"
                     else:
-                        badge_color = "#66bb6a" if is_valid else "#ef5350"
+                        badge_color = "#22c55e" if is_valid else "#ef4444"
                         badge_text = "VALID" if is_valid else status.upper()
                         
                     disp_badge = ' <span style="background:#ff7043;padding:2px 8px;border-radius:8px;font-size:0.75rem;">DISPOSABLE</span>' if is_disp else ""
@@ -453,7 +453,7 @@ if page == "🔍 Analyze Resume":
                     <div class="glass-card" style="padding: 0.75rem; margin-bottom: 0.5rem;">
                         <span style="font-weight:600;">{ev.get('email','N/A')}</span>
                         <span style="background:{badge_color};color:#fff;padding:2px 10px;border-radius:8px;font-size:0.75rem;margin-left:8px;">{badge_text}</span>{disp_badge}
-                        <div style="color:#9e9e9e;font-size:0.8rem;margin-top:4px;">
+                        <div style="color:#94A3B8;font-size:0.8rem;margin-top:4px;">
                             Sub-status: {ev.get('sub_status','—')}
                         </div>
                     </div>
@@ -467,15 +467,15 @@ if page == "🔍 Analyze Resume":
             if phone_verif:
                 for pv in phone_verif:
                     is_valid = pv.get("is_valid", False)
-                    badge_color = "#66bb6a" if is_valid else "#ef5350"
+                    badge_color = "#22c55e" if is_valid else "#ef4444"
                     badge_text = "VALID" if is_valid else "INVALID"
                     line_type = pv.get("line_type", "unknown") or "unknown"
-                    voip_badge = ' <span style="background:#ffa726;padding:2px 8px;border-radius:8px;font-size:0.75rem;">VoIP</span>' if line_type.lower() == "voip" else ""
+                    voip_badge = ' <span style="background:#eab308;padding:2px 8px;border-radius:8px;font-size:0.75rem;">VoIP</span>' if line_type.lower() == "voip" else ""
                     st.markdown(f"""
                     <div class="glass-card" style="padding: 0.75rem; margin-bottom: 0.5rem;">
                         <span style="font-weight:600;">{pv.get('phone','N/A')}</span>
                         <span style="background:{badge_color};color:#fff;padding:2px 10px;border-radius:8px;font-size:0.75rem;margin-left:8px;">{badge_text}</span>{voip_badge}
-                        <div style="color:#9e9e9e;font-size:0.8rem;margin-top:4px;">
+                        <div style="color:#94A3B8;font-size:0.8rem;margin-top:4px;">
                             State: {pv.get('state','—')} | Country: {pv.get('country','—')}
                         </div>
                     </div>
@@ -492,13 +492,13 @@ if page == "🔍 Analyze Resume":
                     status_msg = prof.get("status", "unknown")
                     
                     if is_valid is True:
-                        badge_color = "#66bb6a"
+                        badge_color = "#22c55e"
                         badge_text = "INDEXED"
                     elif is_valid is False:
-                        badge_color = "#ef5350"
+                        badge_color = "#ef4444"
                         badge_text = "FAKE / UNINDEXED"
                     else:
-                        badge_color = "#ffa726"
+                        badge_color = "#eab308"
                         badge_text = "ERROR"
 
                     url_display = prof.get('url', 'N/A')
@@ -511,7 +511,7 @@ if page == "🔍 Analyze Resume":
                         <div style="margin-top:4px;">
                             <span style="background:{badge_color};color:#fff;padding:2px 10px;border-radius:8px;font-size:0.75rem;">{badge_text}</span>
                         </div>
-                        <div style="color:#9e9e9e;font-size:0.8rem;margin-top:4px;">
+                        <div style="color:#94A3B8;font-size:0.8rem;margin-top:4px;">
                             Status: {status_msg}
                         </div>
                     </div>
@@ -551,6 +551,7 @@ elif page == "📊 Batch Analysis":
                     res = requests.post(
                         f"{API_URL}/validate_resume",
                         files={"file": (f.name, f.getvalue(), "application/octet-stream")},
+                        headers={"X-API-Key": "deet-telangana-hackathon-2026"},
                         timeout=120,
                     )
                     if res.status_code == 200:
@@ -593,7 +594,7 @@ elif page == "📊 Batch Analysis":
                 y="Name",
                 orientation="h",
                 color="Risk Score",
-                color_continuous_scale=["#4fc3f7", "#66bb6a", "#ffa726", "#ff7043", "#ef5350"],
+                color_continuous_scale=["#FCC200", "#22c55e", "#eab308", "#f97316", "#ef4444"],
                 range_color=[0, 100],
             )
             fig.update_layout(
@@ -601,8 +602,8 @@ elif page == "📊 Batch Analysis":
                 plot_bgcolor="rgba(0,0,0,0)",
                 margin=dict(t=10, b=10),
                 height=max(300, len(results) * 50),
-                xaxis=dict(gridcolor="rgba(255,255,255,0.08)", range=[0, 100]),
-                yaxis=dict(tickfont=dict(color="#e0e0e0")),
+                xaxis=dict(gridcolor="rgba(30,41,59,0.5)", range=[0, 100]),
+                yaxis=dict(tickfont=dict(color="#ffffff")),
                 coloraxis_showscale=False,
             )
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
@@ -646,6 +647,7 @@ elif page == "🆚 Compare Resumes":
                         "file1": (file1.name, file1.getvalue(), "application/octet-stream"),
                         "file2": (file2.name, file2.getvalue(), "application/octet-stream"),
                     },
+                    headers={"X-API-Key": "deet-telangana-hackathon-2026"},
                     timeout=120,
                 )
                 data = res.json()

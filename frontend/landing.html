@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Sentinel — AI-Powered Fraud Detection</title>
+  <meta name="description" content="Six weighted intelligence signals combine into a real-time risk score. Detect fraud in every resume." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* ── CSS Reset & Base ──────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    :root {
+      --bg: #030304;
+      --bg-card: #0F1115;
+      --primary: #FCC200;
+      --orange: #EA580C;
+      --gold: #FFD600;
+      --muted: #94A3B8;
+      --border: rgba(255,255,255,0.1);
+      --border-subtle: rgba(255,255,255,0.06);
+      --font-heading: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius: 1rem;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: #fff;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+    button { border: none; cursor: pointer; font-family: inherit; }
+    img { max-width: 100%; display: block; }
+
+    /* ── Scroll Progress Bar ──────────────────────── */
+    #scroll-progress {
+      position: fixed; top: 0; left: 0; z-index: 100;
+      height: 3px; width: 0%;
+      background: linear-gradient(90deg, var(--orange), var(--primary), var(--gold));
+      background-size: 200% 100%;
+      animation: gradient-shift 3s ease infinite;
+      transition: width 0.15s linear;
+    }
+
+    /* ── Grid Pattern ─────────────────────────────── */
+    .bg-grid-pattern {
+      background-size: 50px 50px;
+      background-image:
+        linear-gradient(to right, rgba(30,41,59,0.5) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30,41,59,0.5) 1px, transparent 1px);
+      mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+      -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+    }
+
+    /* ── Glass Morphism ───────────────────────────── */
+    .glass {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(15,17,21,0.7);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* ── Utility Classes ──────────────────────────── */
+    .container { max-width: 80rem; margin: 0 auto; padding: 0 1.5rem; }
+    .container-sm { max-width: 56rem; margin: 0 auto; padding: 0 1.5rem; }
+
+    .font-heading { font-family: var(--font-heading); }
+    .font-mono { font-family: var(--font-mono); }
+
+    .gradient-text {
+      background: linear-gradient(to right, var(--primary), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-text-orange {
+      background: linear-gradient(to right, var(--orange), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gradient-text-orange-gold {
+      background: linear-gradient(to right, var(--orange), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn-gradient {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      background: linear-gradient(to right, var(--orange), var(--primary));
+      color: #fff; font-weight: 600; font-size: 0.875rem;
+      letter-spacing: 0.05em;
+      box-shadow: 0 0 20px -5px rgba(234,88,12,0.5);
+      transition: all 0.3s ease;
+    }
+    .btn-gradient:hover {
+      box-shadow: 0 0 30px -5px rgba(252,194,0,0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 2rem;
+      border-radius: 9999px;
+      border: 2px solid rgba(255,255,255,0.2);
+      background: transparent; color: #fff;
+      font-weight: 500; font-size: 0.875rem;
+      transition: all 0.3s ease;
+    }
+    .btn-outline:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(252,194,0,0.3);
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .badge-outline {
+      display: inline-flex; align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Ambient Glow Blobs ───────────────────────── */
+    .glow {
+      position: absolute; border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* ── Animations ───────────────────────────────── */
+    @keyframes orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes orbit-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    @keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    @keyframes ping { 75%,100% { transform: scale(2); opacity: 0; } }
+    @keyframes pulse-glow { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes typing-blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+    .animate-orbit { animation: orbit 10s linear infinite; }
+    .animate-orbit-reverse { animation: orbit-reverse 15s linear infinite; }
+    .animate-float { animation: float 8s ease-in-out infinite; }
+    .animate-marquee { animation: marquee 25s linear infinite; }
+    .animate-marquee:hover { animation-play-state: paused; }
+    .animate-ping { animation: ping 1s cubic-bezier(0,0,0.2,1) infinite; }
+
+    /* Intersection observer animation */
+    .reveal { opacity: 0; transform: translateY(24px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-blur { opacity: 0; filter: blur(8px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .reveal-blur.visible { opacity: 1; filter: blur(0); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .animate-orbit, .animate-orbit-reverse, .animate-float, .animate-marquee { animation: none; }
+      .reveal, .reveal-blur { opacity: 1; transform: none; filter: none; transition: none; }
+    }
+
+    /* ── NAVBAR ────────────────────────────────────── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: rgba(3,3,4,0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      animation: fade-in-up 0.5s ease;
+    }
+    .navbar-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      height: 3.5rem;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .nav-logo svg { color: var(--primary); transition: transform 0.5s; }
+    .nav-logo:hover svg { transform: rotate(180deg); }
+    .nav-logo span { font-family: var(--font-heading); font-weight: 600; font-size: 1rem; letter-spacing: -0.02em; }
+
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; }
+    .nav-links a {
+      padding: 0.375rem 0.75rem; border-radius: 0.5rem;
+      font-family: var(--font-mono); font-size: 0.75rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); transition: all 0.2s;
+    }
+    .nav-links a:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
+
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.4rem 1.25rem; border-radius: 9999px;
+      background: linear-gradient(to right, var(--orange), var(--primary));
+      color: #fff; font-family: var(--font-mono); font-size: 0.75rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      box-shadow: 0 0 20px -5px rgba(234,88,12,0.5);
+      transition: all 0.3s;
+    }
+    .nav-cta:hover { box-shadow: 0 0 30px -5px rgba(252,194,0,0.6); }
+
+    /* Mobile nav toggle */
+    .nav-toggle { display: none; background: none; padding: 0.5rem; color: var(--muted); transition: color 0.2s; }
+    .nav-toggle:hover { color: #fff; }
+    .mobile-nav {
+      display: none; flex-direction: column; gap: 0.25rem;
+      padding: 1rem 1.5rem;
+      background: rgba(3,3,4,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .mobile-nav a {
+      padding: 0.6rem 0.75rem; border-radius: 0.5rem;
+      font-family: var(--font-mono); font-size: 0.75rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); transition: all 0.2s;
+    }
+    .mobile-nav a:hover { color: var(--primary); background: rgba(255,255,255,0.05); }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-cta-wrap { display: none; }
+      .nav-toggle { display: flex; align-items: center; justify-content: center; }
+      .mobile-nav.open { display: flex; }
+    }
+
+    /* ── HERO ─────────────────────────────────────── */
+    .hero { position: relative; overflow: hidden; padding-top: 3.5rem; }
+    .hero-grid { position: absolute; inset: 0; opacity: 0.4; }
+    .hero-content {
+      position: relative;
+      display: grid; gap: 3rem;
+      padding: 6rem 0 5rem;
+    }
+    @media (min-width: 1024px) {
+      .hero-content { grid-template-columns: 1.1fr 0.9fr; gap: 4rem; padding: 9rem 0 7rem; }
+    }
+    .hero-left { display: flex; flex-direction: column; justify-content: center; }
+
+    .hero h1 {
+      font-family: var(--font-heading); font-weight: 700;
+      font-size: clamp(2.25rem, 5vw, 4.5rem);
+      line-height: 1.1; letter-spacing: -0.02em;
+    }
+
+    .typing-line {
+      margin-top: 1.5rem; height: 2rem;
+      font-family: var(--font-mono); font-size: 0.875rem;
+      color: var(--muted); letter-spacing: 0.04em;
+    }
+    .typing-line .typed { color: var(--primary); }
+    .typing-cursor { display: inline-block; width: 2px; height: 1em; background: var(--primary); margin-left: 2px; vertical-align: text-bottom; animation: typing-blink 0.8s step-end infinite; }
+
+    .hero-desc { margin-top: 1rem; max-width: 32rem; font-size: 1rem; color: var(--muted); line-height: 1.7; }
+    @media (min-width: 768px) { .hero-desc { font-size: 1.125rem; } }
+
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
+
+    /* Orbital animation area */
+    .orbital-wrap {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      height: 300px;
+    }
+    @media (min-width: 768px) { .orbital-wrap { height: 450px; } }
+
+    .orbital-ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .orbital-ring-inner {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(252,194,0,0.2);
+    }
+    .orbital-dot {
+      position: absolute; border-radius: 50%;
+    }
+
+    .orbital-center {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: center;
+      width: 5rem; height: 5rem; border-radius: 1rem;
+      background: rgba(252,194,0,0.1);
+      border: 1px solid rgba(252,194,0,0.3);
+      box-shadow: 0 0 30px rgba(252,194,0,0.2);
+    }
+    @media (min-width: 768px) { .orbital-center { width: 6rem; height: 6rem; } }
+
+    .floating-card {
+      position: absolute;
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.5rem 0.75rem; border-radius: 0.75rem;
+    }
+    .floating-card span {
+      font-family: var(--font-mono); font-size: 0.625rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+
+    .pulsing-dot { position: relative; display: flex; width: 0.5rem; height: 0.5rem; }
+    .pulsing-dot::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: var(--primary); opacity: 0.75; animation: ping 1s cubic-bezier(0,0,0.2,1) infinite;
+    }
+    .pulsing-dot::after {
+      content: ''; position: relative; display: inline-flex; border-radius: 50%;
+      width: 0.5rem; height: 0.5rem; background: var(--primary);
+    }
+
+    /* Marquee */
+    .marquee-bar {
+      position: relative;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(15,17,21,0.6);
+      padding: 1rem 0; overflow: hidden;
+    }
+    .marquee-track { display: flex; white-space: nowrap; }
+    .marquee-track span {
+      margin: 0 2rem;
+      font-family: var(--font-mono); font-size: 0.625rem; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: rgba(148,163,184,0.5); user-select: none;
+    }
+
+    /* ── FEATURES ─────────────────────────────────── */
+    .features { position: relative; background: var(--bg-card); padding: 6rem 0 6rem; }
+    @media (min-width: 640px) { .features { padding: 8rem 0; } }
+
+    .section-header h2 {
+      font-family: var(--font-heading); font-weight: 700;
+      font-size: clamp(1.5rem, 3vw, 3rem);
+      letter-spacing: -0.02em;
+    }
+    .section-header p { margin-top: 1rem; max-width: 36rem; font-size: 1rem; color: var(--muted); line-height: 1.7; }
+    @media (min-width: 768px) { .section-header p { font-size: 1.125rem; } }
+
+    .features-grid {
+      display: grid; gap: 1.5rem; margin-top: 4rem;
+    }
+    @media (min-width: 768px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .features-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .feature-card {
+      position: relative; overflow: hidden;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 1rem; padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+      border-color: rgba(252,194,0,0.5);
+      box-shadow: 0 0 30px -10px rgba(252,194,0,0.2);
+      transform: translateY(-4px);
+    }
+    .feature-card .watermark {
+      position: absolute; right: -1rem; bottom: -1rem;
+      width: 8rem; height: 8rem; color: #fff;
+      opacity: 0.03; transform: rotate(12deg);
+      transition: opacity 0.5s;
+    }
+    .feature-card:hover .watermark { opacity: 0.08; }
+
+    .feature-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 2.75rem; height: 2.75rem; border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+      transition: box-shadow 0.3s;
+    }
+    .feature-card:hover .feature-icon { box-shadow: 0 0 20px rgba(234,88,12,0.3); }
+
+    .feature-card h3 { font-family: var(--font-heading); font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .feature-card .subtitle { font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+    .feature-card .desc { margin-top: 0.75rem; font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+    .feature-tag {
+      display: inline-block; margin-top: 1rem;
+      padding: 0.2rem 0.6rem; border-radius: 9999px;
+      font-family: var(--font-mono); font-size: 0.625rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+
+    /* ── HOW IT WORKS ─────────────────────────────── */
+    .how-it-works { position: relative; padding: 6rem 0; }
+    @media (min-width: 640px) { .how-it-works { padding: 8rem 0; } }
+
+    .timeline { position: relative; margin-top: 4rem; }
+    .timeline-line {
+      position: absolute;
+      left: 1.5rem; top: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, var(--primary), rgba(252,194,0,0.3), transparent);
+    }
+    @media (min-width: 768px) { .timeline-line { left: 2rem; } }
+
+    .timeline-step { position: relative; display: flex; gap: 1.5rem; padding-bottom: 3rem; }
+    .timeline-step:last-child { padding-bottom: 0; }
+    @media (min-width: 768px) { .timeline-step { gap: 2.5rem; } }
+
+    .timeline-node {
+      position: relative; z-index: 10; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      width: 3rem; height: 3rem; border-radius: 50%;
+      border: 2px solid rgba(252,194,0,0.4);
+      background: var(--bg-card);
+      font-family: var(--font-mono); font-size: 1.125rem; font-weight: 700;
+      color: var(--primary);
+      transition: all 0.3s;
+    }
+    .timeline-node:hover { border-color: var(--primary); box-shadow: 0 0 20px rgba(252,194,0,0.3); }
+    @media (min-width: 768px) { .timeline-node { width: 4rem; height: 4rem; font-size: 1.25rem; } }
+
+    .timeline-card {
+      flex: 1; position: relative; overflow: hidden;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--border); border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s;
+    }
+    @media (min-width: 768px) { .timeline-card { padding: 2rem; } }
+    .timeline-card:hover { border-color: rgba(252,194,0,0.4); box-shadow: 0 0 30px -10px rgba(252,194,0,0.15); }
+
+    /* Corner accents */
+    .timeline-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 1.5rem; height: 1.5rem;
+      border-top: 1px solid rgba(252,194,0,0.4);
+      border-left: 1px solid rgba(252,194,0,0.4);
+      border-top-left-radius: 1rem;
+    }
+    .timeline-card::after {
+      content: ''; position: absolute; bottom: 0; right: 0;
+      width: 1.5rem; height: 1.5rem;
+      border-bottom: 1px solid rgba(252,194,0,0.4);
+      border-right: 1px solid rgba(252,194,0,0.4);
+      border-bottom-right-radius: 1rem;
+    }
+
+    .timeline-card .step-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 2.25rem; height: 2.25rem; border-radius: 0.5rem;
+      background: rgba(234,88,12,0.15); border: 1px solid rgba(234,88,12,0.3);
+      transition: box-shadow 0.3s;
+    }
+    .timeline-card:hover .step-icon { box-shadow: 0 0 15px rgba(234,88,12,0.3); }
+    .timeline-card .step-icon svg { color: var(--primary); width: 1rem; height: 1rem; }
+
+    .timeline-card h3 { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 600; }
+    .timeline-card p { margin-top: 0.75rem; font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+    .step-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+
+    /* ── SIGNALS ───────────────────────────────────── */
+    .signals { position: relative; background: var(--bg-card); padding: 6rem 0; }
+    @media (min-width: 640px) { .signals { padding: 8rem 0; } }
+
+    .signals-list { margin-top: 3rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+    .signal-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 1rem 1.25rem; border-radius: 1rem;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      transition: all 0.3s;
+    }
+    @media (min-width: 640px) { .signal-row { gap: 1.25rem; } }
+    .signal-row:hover { border-color: rgba(252,194,0,0.3); box-shadow: 0 0 20px -8px rgba(252,194,0,0.15); }
+
+    .signal-dot { position: relative; display: flex; width: 0.625rem; height: 0.625rem; flex-shrink: 0; }
+    .signal-dot::before {
+      content: ''; position: absolute; inset: 0; border-radius: 50%;
+      background: var(--primary); opacity: 0.4;
+    }
+    .signal-row:hover .signal-dot::before { animation: ping 1s cubic-bezier(0,0,0.2,1) infinite; }
+    .signal-dot::after {
+      content: ''; position: relative; display: inline-flex; border-radius: 50%;
+      width: 0.625rem; height: 0.625rem; background: var(--primary);
+    }
+
+    .signal-name {
+      min-width: 130px; font-family: var(--font-mono); font-size: 0.75rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+    }
+    @media (min-width: 640px) { .signal-name { min-width: 170px; } }
+
+    .signal-bar-wrap { flex: 1; height: 0.625rem; background: rgba(255,255,255,0.05); border-radius: 9999px; overflow: hidden; }
+    .signal-bar {
+      height: 100%; border-radius: 9999px;
+      background: linear-gradient(to right, var(--orange), var(--primary));
+      box-shadow: 0 0 10px rgba(252,194,0,0.3);
+      width: 0%; transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .signal-weight {
+      min-width: 2.625rem; text-align: right;
+      font-family: var(--font-mono); font-size: 0.875rem; font-weight: 700;
+      color: var(--primary);
+    }
+
+    .signal-range {
+      display: none; padding: 0.15rem 0.5rem; border-radius: 9999px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 0.625rem;
+      letter-spacing: 0.08em; color: var(--muted);
+    }
+    @media (min-width: 640px) { .signal-range { display: inline-flex; } }
+
+    .signals-total {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 0.75rem; margin-top: 1.5rem; padding: 0 1.25rem;
+    }
+    .signals-total .label { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .signals-total .value { font-family: var(--font-mono); font-size: 1.125rem; font-weight: 700; color: var(--gold); }
+
+    /* ── TECH STACK ────────────────────────────────── */
+    .tech-stack { position: relative; padding: 6rem 0; }
+    @media (min-width: 640px) { .tech-stack { padding: 8rem 0; } }
+
+    .tech-grid { display: grid; gap: 1.5rem; margin-top: 3.5rem; }
+    @media (min-width: 768px) { .tech-grid { grid-template-columns: repeat(3, 1fr); } }
+
+    .tech-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 1rem; overflow: hidden;
+      transition: all 0.3s;
+    }
+    .tech-card:hover {
+      border-color: rgba(252,194,0,0.4);
+      box-shadow: 0 0 30px -10px rgba(252,194,0,0.15);
+      transform: translateY(-4px);
+    }
+    .tech-card-header {
+      padding: 1.5rem 1.5rem 0.75rem;
+      font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary);
+    }
+    .tech-card-body { padding: 0 1.5rem 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .tech-badge {
+      padding: 0.2rem 0.6rem; border-radius: 9999px;
+      border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 0.6875rem;
+      letter-spacing: 0.04em; color: rgba(255,255,255,0.8);
+      transition: all 0.2s;
+    }
+    .tech-badge:hover { border-color: rgba(252,194,0,0.4); color: var(--primary); }
+
+    /* ── FOOTER ────────────────────────────────────── */
+    .footer {
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg);
+      padding: 3rem 0;
+    }
+    .footer-top {
+      display: flex; flex-direction: column; align-items: center; gap: 2rem;
+    }
+    @media (min-width: 640px) { .footer-top { flex-direction: row; justify-content: space-between; } }
+
+    .footer-logo { display: flex; align-items: center; gap: 0.6rem; }
+    .footer-logo svg { color: var(--primary); }
+    .footer-logo span { font-family: var(--font-heading); font-weight: 600; font-size: 0.875rem; letter-spacing: -0.02em; }
+
+    .footer-nav { display: flex; align-items: center; gap: 1.5rem; }
+    .footer-nav a {
+      font-family: var(--font-mono); font-size: 0.625rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); transition: color 0.2s;
+    }
+    .footer-nav a:hover { color: var(--primary); }
+
+    .footer-sep { margin: 2rem 0; height: 1px; background: var(--border-subtle); }
+
+    .footer-bottom {
+      display: flex; flex-direction: column; align-items: center; gap: 1rem;
+    }
+    @media (min-width: 640px) { .footer-bottom { flex-direction: row; justify-content: space-between; } }
+    .footer-bottom p {
+      font-family: var(--font-mono); font-size: 0.625rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: rgba(148,163,184,0.4);
+    }
+    .footer-bottom p:last-child { color: rgba(148,163,184,0.3); }
+  </style>
+</head>
+
+<body>
+
+  <!-- Scroll Progress Bar -->
+  <div id="scroll-progress"></div>
+
+  <!-- ═══════════════════════════════════════════════ NAVBAR ═══ -->
+  <header class="navbar" id="navbar">
+    <div class="container navbar-inner">
+      <a href="#" class="nav-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+        <span>Resume Sentinel</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#signals">Signals</a>
+        <a href="#tech">Tech Stack</a>
+      </nav>
+
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        </button>
+        <a href="index.html" class="nav-cta">Launch App →</a>
+      </div>
+    </div>
+
+    <div class="mobile-nav" id="mobile-nav">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#signals">Signals</a>
+      <a href="#tech">Tech Stack</a>
+      <a href="index.html" style="color:var(--primary);font-weight:600;">Launch App →</a>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════ HERO ═══ -->
+  <section class="hero">
+    <div class="hero-grid bg-grid-pattern"></div>
+    <!-- Ambient glows -->
+    <div class="glow" style="top:25%;left:25%;width:500px;height:500px;background:var(--primary);opacity:0.04;filter:blur(150px);"></div>
+    <div class="glow" style="bottom:0;right:25%;width:400px;height:400px;background:var(--orange);opacity:0.03;filter:blur(120px);"></div>
+
+    <div class="container hero-content">
+      <!-- Left Column -->
+      <div class="hero-left">
+        <div class="reveal">
+          <div class="badge">
+            <span class="pulsing-dot"></span>
+            AI-Powered Detection
+          </div>
+        </div>
+
+        <div class="reveal-blur" style="transition-delay:0.1s">
+          <h1>Detect fraud in <span class="gradient-text">every resume.</span></h1>
+        </div>
+
+        <div class="typing-line reveal" style="transition-delay:0.2s">
+          Analyzing: <span class="typed" id="typed-text"></span><span class="typing-cursor"></span>
+        </div>
+
+        <div class="reveal" style="transition-delay:0.3s">
+          <p class="hero-desc">Six weighted intelligence signals combine into a real-time risk score. Powered by AI. Trusted by recruiters.</p>
+        </div>
+
+        <div class="hero-ctas reveal" style="transition-delay:0.4s">
+          <a href="index.html" class="btn-gradient">
+            Start Scanning
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </a>
+          <a href="#signals" class="btn-outline">View Signals</a>
+        </div>
+      </div>
+
+      <!-- Right Column — Orbital Animation -->
+      <div class="orbital-wrap reveal" style="transition-delay:0.3s">
+        <!-- Ambient glow blobs -->
+        <div class="glow" style="width:300px;height:300px;background:var(--primary);opacity:0.08;filter:blur(120px);"></div>
+        <div class="glow" style="width:200px;height:200px;background:var(--gold);opacity:0.04;filter:blur(100px);transform:translate(48px,-32px);"></div>
+
+        <!-- Outer orbital ring -->
+        <div class="orbital-ring animate-orbit" style="width:240px;height:240px;">
+          <div class="orbital-dot" style="top:-6px;left:50%;transform:translateX(-50%);width:12px;height:12px;background:var(--primary);box-shadow:0 0 12px rgba(252,194,0,0.6);"></div>
+        </div>
+        <!-- Inner orbital ring -->
+        <div class="orbital-ring-inner animate-orbit-reverse" style="width:160px;height:160px;">
+          <div class="orbital-dot" style="bottom:-4px;left:50%;transform:translateX(-50%);width:8px;height:8px;background:var(--gold);box-shadow:0 0 8px rgba(255,214,0,0.5);"></div>
+        </div>
+
+        <!-- Center icon -->
+        <div class="orbital-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FCC200" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+        </div>
+
+        <!-- Floating stat cards -->
+        <div class="floating-card glass animate-float" style="top:0;right:0;">
+          <span class="pulsing-dot"></span>
+          <span style="color:var(--primary);">6 Signals</span>
+        </div>
+        <div class="floating-card glass animate-float" style="bottom:1rem;left:0;animation-delay:2.5s;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFD600" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+          <span style="color:var(--gold);">&lt; 3s</span>
+        </div>
+        <div class="floating-card glass animate-float" style="top:50%;right:-1rem;transform:translateY(-50%);animation-delay:5s;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>
+          <span style="color:rgba(255,255,255,0.6);">Secure</span>
+        </div>
+
+        <!-- Larger rings on desktop -->
+        <style>
+          @media (min-width: 768px) {
+            .orbital-ring { width: 360px !important; height: 360px !important; }
+            .orbital-ring-inner { width: 240px !important; height: 240px !important; }
+          }
+        </style>
+      </div>
+    </div>
+
+    <!-- Marquee Bar -->
+    <div class="marquee-bar">
+      <div class="marquee-track animate-marquee" id="marquee-track"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ FEATURES ═══ -->
+  <section class="features" id="features">
+    <div class="glow" style="top:0;left:33%;width:500px;height:300px;background:var(--primary);opacity:0.02;filter:blur(150px);"></div>
+
+    <div class="container" style="position:relative;">
+      <div class="section-header">
+        <h2 class="reveal-blur">Detection <span class="gradient-text">Signals</span></h2>
+        <p class="reveal" style="transition-delay:0.1s">Six intelligent signals work in concert to produce a comprehensive fraud risk assessment.</p>
+      </div>
+
+      <div class="features-grid" id="features-grid"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ HOW IT WORKS ═══ -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="glow" style="top:50%;right:0;width:400px;height:400px;background:var(--orange);opacity:0.03;filter:blur(120px);transform:translateY(-50%);"></div>
+
+    <div class="container-sm" style="position:relative;">
+      <div class="section-header">
+        <h2 class="reveal-blur">How It <span class="gradient-text-orange">Works</span></h2>
+        <p class="reveal" style="transition-delay:0.1s">From upload to verdict — four precision-engineered steps.</p>
+      </div>
+
+      <div class="timeline" id="timeline">
+        <div class="timeline-line"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ SIGNALS ═══ -->
+  <section class="signals" id="signals">
+    <div class="glow" style="bottom:0;left:25%;width:400px;height:300px;background:var(--gold);opacity:0.02;filter:blur(120px);"></div>
+
+    <div class="container-sm" style="position:relative;">
+      <div class="section-header">
+        <h2 class="reveal-blur">Scoring <span class="gradient-text">Weights</span></h2>
+        <p class="reveal" style="transition-delay:0.1s">Each signal contributes a weighted score to the final risk assessment. Transparent methodology — nothing hidden.</p>
+      </div>
+
+      <div class="signals-list" id="signals-list"></div>
+
+      <div class="signals-total reveal" style="transition-delay:0.5s">
+        <span class="label">Total</span>
+        <span class="value" id="total-counter">0%</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ TECH STACK ═══ -->
+  <section class="tech-stack" id="tech">
+    <div class="glow" style="top:0;right:33%;width:400px;height:300px;background:var(--primary);opacity:0.02;filter:blur(130px);"></div>
+
+    <div class="container" style="position:relative;">
+      <div class="section-header">
+        <h2 class="reveal-blur">Built With <span class="gradient-text-orange-gold">Precision</span></h2>
+        <p class="reveal" style="transition-delay:0.1s">Enterprise-grade stack engineered for accuracy, speed, and reliability.</p>
+      </div>
+
+      <div class="tech-grid" id="tech-grid"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+          <span>Resume Sentinel</span>
+        </div>
+        <nav class="footer-nav">
+          <a href="#features">Features</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#signals">Signals</a>
+          <a href="#tech">Tech</a>
+        </nav>
+      </div>
+      <div class="footer-sep"></div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="year"></span> Resume Sentinel — AI-Powered Fraud Detection</p>
+        <p>Built with FastAPI + Gemini AI + Streamlit</p>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════════ JAVASCRIPT ═══ -->
+  <script>
+    /* ── Data ──────────────────────────────────────── */
+    const featuresData = [
+      { icon: 'shield', title: 'Timeline Analysis', subtitle: 'Employment overlap detection', desc: 'Identifies contradictory or overlapping dates in work history. Flags fabricated concurrent roles and unrealistic tenure patterns.', tag: 'Core Signal', accent: '#FCC200' },
+      { icon: 'mail', title: 'Email Verification', subtitle: 'ZeroBounce-powered validation', desc: 'Validates email deliverability in real-time. Catches disposable addresses, spam traps, abuse accounts, and typo-domains.', tag: 'API Signal', accent: '#FFD600' },
+      { icon: 'phone', title: 'Phone Validation', subtitle: 'NumVerify-powered checks', desc: 'Verifies phone numbers against carrier databases. Detects VoIP lines, toll-free numbers, and provides geo-location.', tag: 'API Signal', accent: '#EA580C' },
+      { icon: 'file-text', title: 'JD Plagiarism', subtitle: 'Copy-paste detection', desc: 'Compares resume text against job descriptions to detect wholesale copy-pasting — a major indicator of fraud.', tag: 'NLP Signal', accent: '#FCC200' },
+      { icon: 'brain', title: 'Semantic Similarity', subtitle: 'AI embedding comparison', desc: 'Uses sentence transformers to compare resumes across submissions, catching duplicates even when wording differs.', tag: 'AI Signal', accent: '#FFD600' },
+      { icon: 'wrench', title: 'Skills Mismatch', subtitle: 'Claim vs experience verification', desc: 'Cross-references claimed skills with job titles and experiences. Flags implausible combinations suggesting fabrication.', tag: 'Logic Signal', accent: '#EA580C' },
+    ];
+
+    const stepsData = [
+      { icon: 'upload', title: 'Upload', text: 'Upload a PDF or DOCX resume through the Streamlit dashboard. Batch upload supported.' },
+      { icon: 'cpu', title: 'Analyze', text: 'Engine extracts entities, calls verification APIs, checks timelines, and runs AI similarity.' },
+      { icon: 'bar-chart-3', title: 'Score', text: 'Six weighted signals combine into a single 0–100 risk score with severity classification.' },
+      { icon: 'file-check', title: 'Explain', text: 'Google Gemini generates a human-readable explanation of every flag detected.' },
+    ];
+
+    const signalsData = [
+      { name: 'Timeline Overlap', weight: 25, range: '0 – 20', tip: 'Detects overlapping employment dates and fabricated concurrent roles' },
+      { name: 'Email Validation', weight: 15, range: '0 – 20', tip: 'ZeroBounce-powered deliverability and disposable email detection' },
+      { name: 'Phone Validation', weight: 10, range: '0 – 15', tip: 'NumVerify carrier lookup with VoIP and geo-location analysis' },
+      { name: 'JD Plagiarism', weight: 20, range: '0 – 15', tip: 'N-gram matching to detect copy-pasted job description content' },
+      { name: 'Semantic Similarity', weight: 20, range: '0 – 20', tip: 'AI sentence-transformer embedding comparison across resumes' },
+      { name: 'Skills Mismatch', weight: 10, range: '0 – 10', tip: 'Role-skill mapping with implausibility scoring per claim' },
+    ];
+
+    const techData = [
+      { category: 'Backend', items: ['FastAPI', 'Python 3.10+', 'pdfplumber', 'python-docx'] },
+      { category: 'AI & Verification', items: ['Google Gemini', 'ZeroBounce', 'NumVerify', 'Sentence Transformers'] },
+      { category: 'Frontend', items: ['Streamlit', 'Next.js 16', 'Plotly', 'shadcn/ui + Animate-UI'] },
+    ];
+
+    const marqueeItems = ['Timeline Overlap','Email Verification','Phone Validation','JD Plagiarism','Semantic Similarity','Skills Mismatch','ZeroBounce API','NumVerify API','Google Gemini','FastAPI'];
+
+    const typingTexts = ['timeline overlaps','email validity','phone authenticity','JD plagiarism','semantic duplicates','skills mismatches'];
+
+    /* ── Render: Marquee ──────────────────────────── */
+    const marqueeTrack = document.getElementById('marquee-track');
+    const allMarquee = [...marqueeItems, ...marqueeItems];
+    marqueeTrack.innerHTML = allMarquee.map(t => `<span>${t}</span>`).join('');
+
+    /* ── Render: Features ─────────────────────────── */
+    const featGrid = document.getElementById('features-grid');
+    featGrid.innerHTML = featuresData.map((f, i) => `
+      <div class="feature-card reveal" style="transition-delay:${i * 0.1}s">
+        <i data-lucide="${f.icon}" class="watermark"></i>
+        <div class="feature-icon" style="background:${f.accent}15;border:1px solid ${f.accent}30;">
+          <i data-lucide="${f.icon}" style="color:${f.accent};width:1.25rem;height:1.25rem;"></i>
+        </div>
+        <h3>${f.title}</h3>
+        <div class="subtitle">${f.subtitle}</div>
+        <p class="desc">${f.desc}</p>
+        <span class="feature-tag" style="color:${f.accent};border:1px solid ${f.accent}30;">${f.tag}</span>
+      </div>
+    `).join('');
+
+    /* ── Render: Timeline ─────────────────────────── */
+    const timeline = document.getElementById('timeline');
+    stepsData.forEach((s, i) => {
+      const step = document.createElement('div');
+      step.className = 'timeline-step reveal';
+      step.style.transitionDelay = `${i * 0.15}s`;
+      step.innerHTML = `
+        <div class="timeline-node">${i + 1}</div>
+        <div class="timeline-card">
+          <div class="step-header">
+            <div class="step-icon"><i data-lucide="${s.icon}"></i></div>
+            <h3>${s.title}</h3>
+          </div>
+          <p>${s.text}</p>
+        </div>
+      `;
+      timeline.appendChild(step);
+    });
+
+    /* ── Render: Signals ──────────────────────────── */
+    const signalsList = document.getElementById('signals-list');
+    signalsData.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'signal-row reveal';
+      row.style.transitionDelay = `${i * 0.08}s`;
+      row.setAttribute('title', s.tip);
+      row.innerHTML = `
+        <span class="signal-dot"></span>
+        <span class="signal-name">${s.name}</span>
+        <div class="signal-bar-wrap"><div class="signal-bar" data-width="${s.weight}"></div></div>
+        <span class="signal-weight"><span class="counter" data-target="${s.weight}">0</span>%</span>
+        <span class="signal-range">${s.range}</span>
+      `;
+      signalsList.appendChild(row);
+    });
+
+    /* ── Render: Tech Stack ───────────────────────── */
+    const techGrid = document.getElementById('tech-grid');
+    techGrid.innerHTML = techData.map((g, i) => `
+      <div class="tech-card reveal" style="transition-delay:${i * 0.12}s">
+        <div class="tech-card-header">${g.category}</div>
+        <div class="tech-card-body">
+          ${g.items.map(item => `<span class="tech-badge">${item}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
+
+    /* ── Year ──────────────────────────────────────── */
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    /* ── Initialize Lucide Icons ──────────────────── */
+    lucide.createIcons();
+
+    /* ── Scroll Progress ──────────────────────────── */
+    const progressBar = document.getElementById('scroll-progress');
+    window.addEventListener('scroll', () => {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const progress = (scrollTop / scrollHeight) * 100;
+      progressBar.style.width = progress + '%';
+    });
+
+    /* ── Mobile Nav Toggle ────────────────────────── */
+    const navToggle = document.getElementById('nav-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    navToggle.addEventListener('click', () => {
+      mobileNav.classList.toggle('open');
+    });
+    mobileNav.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => mobileNav.classList.remove('open'));
+    });
+
+    /* ── Intersection Observer — Reveal on scroll ── */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+
+          // Animate signal bars and counters when they become visible
+          const bars = entry.target.querySelectorAll('.signal-bar');
+          bars.forEach(bar => {
+            bar.style.width = bar.dataset.width + '%';
+          });
+          const counters = entry.target.querySelectorAll('.counter');
+          counters.forEach(counter => {
+            animateCounter(counter, parseInt(counter.dataset.target));
+          });
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-blur').forEach(el => {
+      revealObserver.observe(el);
+    });
+
+    // Also observe signal rows individually for bar animations
+    document.querySelectorAll('.signal-row').forEach(row => {
+      revealObserver.observe(row);
+    });
+
+    /* ── Counting Animation ───────────────────────── */
+    function animateCounter(el, target) {
+      let current = 0;
+      const increment = target / 30;
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          current = target;
+          clearInterval(timer);
+        }
+        el.textContent = Math.round(current);
+      }, 30);
+    }
+
+    // Total counter
+    const totalEl = document.getElementById('total-counter');
+    const totalObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          let current = 0;
+          const timer = setInterval(() => {
+            current += 100 / 40;
+            if (current >= 100) { current = 100; clearInterval(timer); }
+            totalEl.textContent = Math.round(current) + '%';
+          }, 30);
+          totalObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    totalObserver.observe(totalEl);
+
+    /* ── Typing Effect ────────────────────────────── */
+    const typedEl = document.getElementById('typed-text');
+    let textIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+    let holdTimer = null;
+
+    function typeLoop() {
+      const currentText = typingTexts[textIdx];
+
+      if (!isDeleting) {
+        typedEl.textContent = currentText.substring(0, charIdx + 1);
+        charIdx++;
+        if (charIdx === currentText.length) {
+          isDeleting = false;
+          holdTimer = setTimeout(() => {
+            isDeleting = true;
+            requestAnimationFrame(typeStep);
+          }, 2000);
+          return;
+        }
+      } else {
+        typedEl.textContent = currentText.substring(0, charIdx - 1);
+        charIdx--;
+        if (charIdx === 0) {
+          isDeleting = false;
+          textIdx = (textIdx + 1) % typingTexts.length;
+        }
+      }
+      requestAnimationFrame(typeStep);
+    }
+
+    function typeStep() {
+      setTimeout(typeLoop, isDeleting ? 35 : 60);
+    }
+
+    typeStep();
+
+    /* ── Navbar scroll background ─────────────────── */
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        navbar.style.background = 'rgba(3,3,4,0.95)';
+      } else {
+        navbar.style.background = 'rgba(3,3,4,0.8)';
+      }
+    });
+  </script>
+</body>
+</html>

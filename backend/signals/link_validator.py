@@ -293,6 +293,7 @@ def verify_profile_links(entities: dict) -> dict:
         serper_headers = {'X-API-KEY': SERPER_API_KEY, 'Content-Type': 'application/json'}
         
         try:
+            # Always run LinkedIn name search via Serper
             if name:
                 if current_company:
                     query = f'site:linkedin.com/in/ "{name}" "{current_company}"'
@@ -302,11 +303,43 @@ def verify_profile_links(entities: dict) -> dict:
                     res = client.post(serper_url, headers=serper_headers, json={"q": query, "num": 3})
                 if res.status_code == 200:
                     data = res.json()
-                    snippets = [r.get('snippet', '') for r in data.get('organic', [])]
+                    organic = data.get('organic', [])
+                    snippets = [r.get('snippet', '') for r in organic]
                     serper_data["linkedin_snippets"].extend(snippets)
-                    if snippets:
+                    found_li_url = None
+                    for r in organic:
+                        link = r.get('link', '')
+                        if 'linkedin.com/in/' in link:
+                            found_li_url = link
+                            break
+                    if snippets and not linkedin_url:
+                        # Add Serper-discovered LinkedIn to verified_links so frontend shows it
+                        verified_links.append({
+                            "url": found_li_url or f"linkedin.com/in/ (Serper: {name})",
+                            "is_valid": True,
+                            "status": f"Found via Google OSINT search for '{name}'",
+                            "verdict": "SERPER_INDEXED",
+                            "dns_ok": True,
+                            "http_status": 200,
+                            "name_found": True,
+                        })
                         findings.append("Serper OSINT: LinkedIn profile found in Google index")
+                    elif snippets:
+                        findings.append("Serper OSINT: LinkedIn profile confirmed in Google index")
+                    elif not linkedin_url:
+                        # Name searched but NOT found in Google — notable
+                        verified_links.append({
+                            "url": f"linkedin.com/in/ (Serper: {name})",
+                            "is_valid": False,
+                            "status": f"No LinkedIn profile found in Google for '{name}'",
+                            "verdict": "NOT_INDEXED",
+                            "dns_ok": None,
+                            "http_status": None,
+                            "name_found": False,
+                        })
+                        findings.append(f"Serper OSINT: No LinkedIn profile found for '{name}'")
             
+            # GitHub search — by URL if available, by name otherwise
             if github_url:
                 match = re.search(r'github\.com/([^/]+)', github_url)
                 if match:
@@ -319,6 +352,46 @@ def verify_profile_links(entities: dict) -> dict:
                         serper_data["github_snippets"].extend(snippets)
                         if snippets:
                             findings.append("Serper OSINT: GitHub profile found in Google index")
+            elif name:
+                # Name-based GitHub search when no explicit GitHub URL provided
+                try:
+                    with httpx.Client(timeout=10.0) as client:
+                        res = client.post(serper_url, headers=serper_headers, json={"q": f'site:github.com "{name}"', "num": 3})
+                    if res.status_code == 200:
+                        data = res.json()
+                        organic = data.get('organic', [])
+                        snippets = [r.get('snippet', '') for r in organic]
+                        serper_data["github_snippets"].extend(snippets)
+                        found_gh_url = None
+                        for r in organic:
+                            link = r.get('link', '')
+                            if 'github.com/' in link:
+                                found_gh_url = link
+                                break
+                        if snippets:
+                            verified_links.append({
+                                "url": found_gh_url or f"github.com (Serper: {name})",
+                                "is_valid": True,
+                                "status": f"Found via Google OSINT search for '{name}'",
+                                "verdict": "SERPER_INDEXED",
+                                "dns_ok": True,
+                                "http_status": 200,
+                                "name_found": True,
+                            })
+                            findings.append("Serper OSINT: GitHub profile found via name search")
+                        else:
+                            verified_links.append({
+                                "url": f"github.com (Serper: {name})",
+                                "is_valid": False,
+                                "status": f"No GitHub profile found in Google for '{name}'",
+                                "verdict": "NOT_INDEXED",
+                                "dns_ok": None,
+                                "http_status": None,
+                                "name_found": False,
+                            })
+                            findings.append(f"Serper OSINT: No GitHub profile found for '{name}'")
+                except Exception as e:
+                    logger.warning(f"Serper GitHub name search failed: {e}")
         except Exception as e:
             logger.warning(f"Serper OSINT check failed (non-critical): {e}")
         
@@ -343,14 +416,22 @@ def verify_profile_links(entities: dict) -> dict:
 
     # ─── No links at all? ────────────────────────────────
     if not links:
-        # No links provided — do name-only Serper search if available
-        if SERPER_API_KEY and name:
+        if findings:
             findings.append("No profile links provided — OSINT name search only")
+        final_score = min(total_risk_score, 30)
+        severity = "NONE"
+        if final_score >= 20:
+            severity = "HIGH"
+        elif final_score >= 10:
+            severity = "MEDIUM"
+        elif final_score > 0:
+            severity = "LOW"
+        explanation = " | ".join(findings) if findings else "No profile links provided in resume."
         return {
-            "score": 0,
-            "severity": "NONE",
-            "explanation": "No profile links provided in resume.",
-            "verified_links": []
+            "score": final_score,
+            "severity": severity,
+            "explanation": explanation,
+            "verified_links": verified_links
         }
 
     # ─── Final Score Calculation ─────────────────────────

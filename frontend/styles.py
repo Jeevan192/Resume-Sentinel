@@ -1,43 +1,52 @@
 """
-Custom CSS for premium dark-theme ResumeGuard dashboard.
-Glassmorphism, gradients, and micro-animations.
+Custom CSS for Resume Sentinel dashboard — Landing page theme.
+Gold/orange accent, near-black backgrounds, glassmorphism, micro-animations.
+Matches the Next.js landing page design system.
 """
 
 CUSTOM_CSS = """
 <style>
-    /* ─── Root Variables ──────────────────────────────── */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    /* ─── Root Variables (Landing Theme) ──────────── */
     :root {
-        --bg-primary: #0f0f1a;
-        --bg-secondary: #1a1a2e;
-        --bg-card: rgba(30, 30, 50, 0.8);
-        --bg-glass: rgba(255, 255, 255, 0.05);
-        --border-glass: rgba(255, 255, 255, 0.1);
-        --accent-blue: #4fc3f7;
-        --accent-purple: #bb86fc;
-        --accent-green: #66bb6a;
-        --accent-red: #ef5350;
-        --accent-orange: #ffa726;
-        --accent-yellow: #ffee58;
-        --text-primary: #e0e0e0;
-        --text-secondary: #9e9e9e;
-        --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        --gradient-danger: linear-gradient(135deg, #ff512f 0%, #dd2476 100%);
-        --gradient-safe: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        --bg-primary: #030304;
+        --bg-secondary: #0F1115;
+        --bg-card: rgba(15, 17, 21, 0.85);
+        --bg-glass: rgba(26, 29, 36, 0.6);
+        --border-glass: rgba(30, 41, 59, 0.7);
+        --border-active: rgba(252, 194, 0, 0.4);
+        --accent-gold: #FCC200;
+        --accent-orange: #EA580C;
+        --accent-bright-gold: #FFD600;
+        --accent-green: #22c55e;
+        --accent-red: #ef4444;
+        --accent-orange-light: #f97316;
+        --accent-yellow: #eab308;
+        --accent-blue: #3b82f6;
+        --text-primary: #ffffff;
+        --text-secondary: #94A3B8;
+        --text-dim: #71717a;
+        --gradient-gold: linear-gradient(135deg, #EA580C 0%, #FCC200 50%, #FFD600 100%);
+        --gradient-orange: linear-gradient(135deg, #EA580C 0%, #FCC200 100%);
+        --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        --gradient-safe: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+        --muted: #1E293B;
     }
 
-    /* ─── Main App Styling ────────────────────────────── */
+    /* ─── Main App Styling ────────────────────────── */
     .stApp {
         background: var(--bg-primary);
         color: var(--text-primary);
+        font-family: 'Inter', system-ui, sans-serif;
     }
-    
+
     .main .block-container {
         max-width: 1200px;
         padding-top: 2rem;
     }
 
-    /* ─── Glass Card ──────────────────────────────────── */
+    /* ─── Glass Card ──────────────────────────────── */
     .glass-card {
         background: var(--bg-glass);
         backdrop-filter: blur(20px);
@@ -49,12 +58,12 @@ CUSTOM_CSS = """
         transition: all 0.3s ease;
     }
     .glass-card:hover {
-        border-color: var(--accent-blue);
-        box-shadow: 0 8px 32px rgba(79, 195, 247, 0.15);
+        border-color: var(--accent-gold);
+        box-shadow: 0 8px 32px rgba(252, 194, 0, 0.1);
         transform: translateY(-2px);
     }
 
-    /* ─── Risk Score Gauge ─────────────────────────────── */
+    /* ─── Risk Score Gauge ─────────────────────────── */
     .risk-gauge {
         text-align: center;
         padding: 2rem;
@@ -69,7 +78,8 @@ CUSTOM_CSS = """
         letter-spacing: -2px;
         line-height: 1;
         margin: 0.5rem 0;
-        background: var(--gradient-1);
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        background: var(--gradient-gold);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
@@ -89,9 +99,10 @@ CUSTOM_CSS = """
         text-transform: uppercase;
         letter-spacing: 2px;
         margin-top: 0.5rem;
+        font-family: 'JetBrains Mono', monospace;
     }
 
-    /* ─── Signal Cards ────────────────────────────────── */
+    /* ─── Signal Cards ────────────────────────────── */
     .signal-card {
         background: var(--bg-glass);
         backdrop-filter: blur(12px);
@@ -103,23 +114,28 @@ CUSTOM_CSS = """
     }
     .signal-card:hover {
         transform: scale(1.03);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        border-color: var(--accent-gold);
+        box-shadow: 0 4px 20px rgba(252, 194, 0, 0.08);
     }
     .signal-icon {
         font-size: 2rem;
         margin-bottom: 0.3rem;
     }
     .signal-name {
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         color: var(--text-secondary);
         margin-bottom: 0.3rem;
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     .signal-score {
         font-size: 1.8rem;
         font-weight: 700;
+        font-family: 'Space Grotesk', system-ui, sans-serif;
     }
 
-    /* ─── Header Styling ──────────────────────────────── */
+    /* ─── Header Styling ──────────────────────────── */
     .main-header {
         text-align: center;
         padding: 1rem 0 2rem 0;
@@ -127,7 +143,8 @@ CUSTOM_CSS = """
     .main-header h1 {
         font-size: 2.5rem;
         font-weight: 800;
-        background: var(--gradient-1);
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        background: var(--gradient-gold);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         margin-bottom: 0.2rem;
@@ -137,30 +154,30 @@ CUSTOM_CSS = """
         font-size: 1rem;
     }
 
-    /* ─── Alert Boxes ─────────────────────────────────── */
+    /* ─── Alert Boxes ─────────────────────────────── */
     .alert-critical {
-        background: linear-gradient(135deg, rgba(239,83,80,0.15) 0%, rgba(221,36,118,0.15) 100%);
-        border: 1px solid rgba(239,83,80,0.4);
+        background: linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(220,38,38,0.12) 100%);
+        border: 1px solid rgba(239,68,68,0.35);
         border-radius: 12px;
         padding: 1rem 1.5rem;
         margin: 1rem 0;
     }
     .alert-safe {
-        background: linear-gradient(135deg, rgba(102,187,106,0.15) 0%, rgba(56,239,125,0.15) 100%);
-        border: 1px solid rgba(102,187,106,0.4);
+        background: linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(22,163,74,0.12) 100%);
+        border: 1px solid rgba(34,197,94,0.35);
         border-radius: 12px;
         padding: 1rem 1.5rem;
         margin: 1rem 0;
     }
     .alert-warning {
-        background: linear-gradient(135deg, rgba(255,167,38,0.15) 0%, rgba(255,238,88,0.15) 100%);
-        border: 1px solid rgba(255,167,38,0.4);
+        background: linear-gradient(135deg, rgba(252,194,0,0.1) 0%, rgba(234,88,12,0.1) 100%);
+        border: 1px solid rgba(252,194,0,0.35);
         border-radius: 12px;
         padding: 1rem 1.5rem;
         margin: 1rem 0;
     }
 
-    /* ─── Stat Pill ────────────────────────────────────── */
+    /* ─── Stat Pill ────────────────────────────────── */
     .stat-pill {
         display: inline-block;
         padding: 0.3rem 0.8rem;
@@ -168,15 +185,16 @@ CUSTOM_CSS = """
         font-size: 0.8rem;
         font-weight: 600;
         margin: 0.2rem;
+        font-family: 'JetBrains Mono', monospace;
     }
-    .pill-red { background: rgba(239,83,80,0.2); color: #ef5350; }
-    .pill-orange { background: rgba(255,167,38,0.2); color: #ffa726; }
-    .pill-yellow { background: rgba(255,238,88,0.2); color: #ffee58; }
-    .pill-green { background: rgba(102,187,106,0.2); color: #66bb6a; }
+    .pill-red { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .pill-orange { background: rgba(249,115,22,0.15); color: #f97316; }
+    .pill-yellow { background: rgba(252,194,0,0.15); color: #FCC200; }
+    .pill-green { background: rgba(34,197,94,0.15); color: #22c55e; }
 
-    /* ─── Progress Bar ────────────────────────────────── */
+    /* ─── Progress Bar ────────────────────────────── */
     .progress-bar-bg {
-        background: rgba(255,255,255,0.08);
+        background: rgba(30, 41, 59, 0.5);
         border-radius: 8px;
         height: 10px;
         overflow: hidden;
@@ -188,7 +206,7 @@ CUSTOM_CSS = """
         transition: width 0.8s ease;
     }
 
-    /* ─── Animations ──────────────────────────────────── */
+    /* ─── Animations ──────────────────────────────── */
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -222,7 +240,7 @@ CUSTOM_CSS = """
         color: var(--text-primary);
     }
     .stTabs [aria-selected="true"] {
-        background: var(--gradient-1);
+        background: var(--gradient-gold);
         border: none;
     }
     div[data-testid="stFileUploader"] {
@@ -231,7 +249,42 @@ CUSTOM_CSS = """
         border-radius: 16px;
         padding: 1rem;
     }
-    
+    div[data-testid="stFileUploader"]:hover {
+        border-color: var(--accent-gold);
+    }
+
+    /* ─── Sidebar ──────────────────────────────────── */
+    section[data-testid="stSidebar"] {
+        background: var(--bg-secondary) !important;
+        border-right: 1px solid var(--border-glass) !important;
+    }
+    section[data-testid="stSidebar"] .stRadio label {
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* ─── Subheader (gold accent) ─────────────────── */
+    .stSubheader, h2, h3 {
+        font-family: 'Space Grotesk', system-ui, sans-serif !important;
+    }
+
+    /* ─── Divider ──────────────────────────────────── */
+    hr {
+        border-color: var(--border-glass) !important;
+    }
+
+    /* ─── Gold glow on interactive elements ────────── */
+    .stButton > button[kind="primary"] {
+        background: var(--gradient-gold) !important;
+        border: none !important;
+        color: #000 !important;
+        font-weight: 700 !important;
+        font-family: 'Space Grotesk', system-ui, sans-serif !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        box-shadow: 0 4px 16px rgba(252, 194, 0, 0.25) !important;
+    }
+
     /* Hide Streamlit default elements */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
